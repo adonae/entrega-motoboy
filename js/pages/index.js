@@ -7,9 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form-nova-entrega");
   const btnCriar = document.getElementById("btn-criar");
   const btnCancelar = document.getElementById("btn-cancelar");
+  const btnBuscarCep = document.getElementById("btn-buscar-cep");
   const listaEntregas = document.getElementById("lista-entregas");
+  const tituloForm = document.querySelector("#form-nova-entrega").closest(".card").querySelector("h2");
   const inputCep = document.getElementById("cliente-cep");
   const cepStatus = document.getElementById("cep-status");
+  const entregaParaEditar = new URLSearchParams(window.location.search).get("editar");
   const camposEndereco = {
     rua: document.getElementById("cliente-endereco"),
     numero: document.getElementById("cliente-numero"),
@@ -19,6 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
     complemento: document.getElementById("cliente-complemento"),
   };
   let ultimoCepConsultado = "";
+  let entregaEmEdicao = null;
+  let entregasCarregadas = [];
+  let edicaoInicialCarregada = false;
 
   document.getElementById("cliente-telefone").addEventListener("input", (e) => {
     e.target.value = Format.phone(e.target.value);
@@ -42,30 +48,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  btnBuscarCep.addEventListener("click", () => {
+    const cepLimpo = ViaCepService.normalizarCep(inputCep.value);
+    consultarCep(cepLimpo);
+  });
+
   btnCancelar.addEventListener("click", () => {
-    form.reset();
-    ultimoCepConsultado = "";
-    cepStatus.textContent = "";
-    cepStatus.className = "field-hint";
+    limparFormulario();
     Dom.showToast("Formulario limpo", "info");
+  });
+
+  listaEntregas.addEventListener("click", async (e) => {
+    const btnEditar = e.target.closest("[data-editar-id]");
+    const btnExcluir = e.target.closest("[data-excluir-id]");
+
+    if (btnEditar) {
+      const entrega = entregasCarregadas.find((item) => item.id === btnEditar.dataset.editarId);
+      if (entrega) preencherFormularioParaEdicao(entrega);
+      return;
+    }
+
+    if (btnExcluir) {
+      await excluirEntrega(btnExcluir.dataset.excluirId, btnExcluir);
+    }
   });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    Dom.setLoading(btnCriar, true, "Salvando...");
+    const editando = Boolean(entregaEmEdicao);
+    Dom.setLoading(btnCriar, true, editando ? "Atualizando..." : "Salvando...");
     try {
-      await EntregaService.criar({
+      const dadosEntrega = {
         nome: document.getElementById("cliente-nome").value.trim(),
         telefone: document.getElementById("cliente-telefone").value.trim(),
         endereco: montarEndereco(),
         observacoes: document.getElementById("cliente-obs").value.trim(),
         enderecoDetalhes: obterEnderecoDetalhes(),
-      });
-      Dom.showToast("Entrega criada com sucesso!", "success");
-      form.reset();
-      ultimoCepConsultado = "";
-      cepStatus.textContent = "";
-      cepStatus.className = "field-hint";
+      };
+
+      if (editando) {
+        await EntregaService.editar(entregaEmEdicao, dadosEntrega);
+        Dom.showToast("Entrega atualizada com sucesso!", "success");
+      } else {
+        await EntregaService.criar(dadosEntrega);
+        Dom.showToast("Entrega criada com sucesso!", "success");
+      }
+
+      limparFormulario();
       carregarEntregas();
     } catch (err) {
       console.error(err);
@@ -75,11 +104,74 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function limparFormulario() {
+    form.reset();
+    entregaEmEdicao = null;
+    ultimoCepConsultado = "";
+    edicaoInicialCarregada = true;
+    tituloForm.textContent = "Nova entrega";
+    btnCriar.textContent = "Criar entrega";
+    btnCancelar.textContent = "Limpar";
+    cepStatus.textContent = "";
+    cepStatus.className = "field-hint";
+    if (window.location.search.includes("editar=")) {
+      window.history.replaceState({}, "", "index.html");
+    }
+  }
+
+  function preencherFormularioParaEdicao(entrega) {
+    const detalhes = entrega.enderecoDetalhes ?? {};
+    entregaEmEdicao = entrega.id;
+    edicaoInicialCarregada = true;
+
+    document.getElementById("cliente-nome").value = entrega.nome ?? "";
+    document.getElementById("cliente-telefone").value = Format.phone(entrega.telefone ?? "");
+    inputCep.value = detalhes.cep ?? "";
+    camposEndereco.rua.value = detalhes.rua ?? entrega.endereco ?? "";
+    camposEndereco.numero.value = detalhes.numero ?? "";
+    camposEndereco.bairro.value = detalhes.bairro ?? "";
+    camposEndereco.cidade.value = detalhes.cidade ?? "";
+    camposEndereco.uf.value = detalhes.uf ?? "";
+    camposEndereco.complemento.value = detalhes.complemento ?? "";
+    document.getElementById("cliente-obs").value = entrega.observacoes ?? "";
+
+    tituloForm.textContent = "Editar entrega";
+    btnCriar.textContent = "Salvar alteracoes";
+    btnCancelar.textContent = "Cancelar edicao";
+    cepStatus.textContent = "Revise os dados antes de salvar.";
+    cepStatus.className = "field-hint";
+    window.history.replaceState({}, "", `index.html?editar=${encodeURIComponent(entrega.id)}`);
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function excluirEntrega(id, button) {
+    const entrega = entregasCarregadas.find((item) => item.id === id);
+    const nome = entrega?.nome ? ` de ${entrega.nome}` : "";
+
+    if (!window.confirm(`Excluir a entrega${nome}? Essa acao nao pode ser desfeita.`)) {
+      return;
+    }
+
+    Dom.setLoading(button, true, "Excluindo...");
+    try {
+      await EntregaService.excluir(id);
+      if (entregaEmEdicao === id) limparFormulario();
+      Dom.showToast("Entrega excluida.", "success");
+      carregarEntregas();
+    } catch (err) {
+      console.error(err);
+      Dom.showToast(err.message || "Erro ao excluir.", "error");
+    } finally {
+      Dom.setLoading(button, false);
+    }
+  }
+
   async function consultarCep(cep) {
     ultimoCepConsultado = cep;
     cepStatus.textContent = "Buscando endereco...";
     cepStatus.className = "field-hint";
     inputCep.disabled = true;
+    Dom.setLoading(btnBuscarCep, true, "...");
 
     try {
       const endereco = await ViaCepService.buscar(cep);
@@ -95,8 +187,10 @@ document.addEventListener("DOMContentLoaded", () => {
       ultimoCepConsultado = "";
       cepStatus.textContent = err.message || "Erro ao buscar CEP.";
       cepStatus.className = "field-hint error";
+      Dom.showToast(cepStatus.textContent, "error");
     } finally {
       inputCep.disabled = false;
+      Dom.setLoading(btnBuscarCep, false);
     }
   }
 
@@ -130,11 +224,22 @@ document.addEventListener("DOMContentLoaded", () => {
     listaEntregas.innerHTML = `<li class="loading">Carregando...</li>`;
     try {
       const entregas = await EntregaService.listarTodas();
+      entregasCarregadas = entregas;
 
       if (!entregas.length) {
         listaEntregas.innerHTML = `<li class="text-muted">Nenhuma entrega registrada.</li>`;
         atualizarContadores([]);
         return;
+      }
+
+      if (entregaParaEditar && !edicaoInicialCarregada) {
+        const entrega = entregas.find((item) => item.id === entregaParaEditar);
+        if (entrega) {
+          preencherFormularioParaEdicao(entrega);
+        } else {
+          Dom.showToast("Entrega para edicao nao encontrada.", "error");
+          edicaoInicialCarregada = true;
+        }
       }
 
       listaEntregas.innerHTML = "";
@@ -151,7 +256,11 @@ document.addEventListener("DOMContentLoaded", () => {
             <strong>${nome}</strong> - <span class="text-muted">${endereco}</span><br>
             <span class="status-badge ${statusClass}">${statusLabel}</span>
           </div>
-          <a href="entrega.html?id=${id}" class="btn btn-secondary" style="padding:0.5rem 1rem;">Abrir</a>
+          <div class="delivery-actions">
+            <button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>
+            <button type="button" class="btn btn-danger btn-sm" data-excluir-id="${id}">Excluir</button>
+            <a href="entrega.html?id=${id}" class="btn btn-secondary btn-sm">Abrir</a>
+          </div>
         `;
         listaEntregas.appendChild(li);
       });

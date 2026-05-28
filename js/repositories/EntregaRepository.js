@@ -26,6 +26,19 @@ export const EntregaRepository = {
     return { id: doc.id, ...doc.data() };
   },
 
+  async update(id, data) {
+    const db = getDb();
+    return db
+      .collection(COLECOES.ENTREGAS)
+      .doc(id)
+      .update({ ...data, atualizadoEm: serverTimestamp() });
+  },
+
+  async delete(id) {
+    const db = getDb();
+    return db.collection(COLECOES.ENTREGAS).doc(id).delete();
+  },
+
   async listAll() {
     const db = getDb();
     const snap = await db

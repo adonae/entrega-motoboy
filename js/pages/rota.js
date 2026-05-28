@@ -1,7 +1,7 @@
 import { EntregaService } from "../services/EntregaService.js";
 import { RotaService } from "../services/RotaService.js";
 import { Dom } from "../utils/dom.js";
-import { STORAGE_KEYS } from "../utils/constants.js";
+import { LOJA } from "../utils/constants.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const btnCalcular = document.getElementById("btn-calcular-rota");
@@ -10,14 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const linkWaze = document.getElementById("link-waze");
   const linkGmaps = document.getElementById("link-gmaps");
   const inputLoja = document.getElementById("endereco-loja");
-  const formLoja = document.getElementById("form-loja");
 
-  inputLoja.value = localStorage.getItem(STORAGE_KEYS.ENDERECO_LOJA) ?? "";
-  formLoja.addEventListener("submit", (e) => {
-    e.preventDefault();
-    localStorage.setItem(STORAGE_KEYS.ENDERECO_LOJA, inputLoja.value.trim());
-    Dom.showToast("Endereco salvo!", "success");
-  });
+  inputLoja.value = LOJA.ENDERECO;
 
   btnCalcular.addEventListener("click", async () => {
     Dom.setLoading(btnCalcular, true, "Otimizando rota...");
@@ -30,10 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const enderecoOrigem = inputLoja.value.trim() || "Sao Paulo, Brasil";
       const { rota, distanciaTotal, origemCoords } = await RotaService.calcular(
-        enderecoOrigem,
+        LOJA.ENDERECO,
         entregas,
+        LOJA.COORDS,
       );
 
       listaRota.innerHTML = "";
@@ -50,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       linkGmaps.href = RotaService.gerarLinkGoogleMaps(origemCoords, rota);
-      linkWaze.href = RotaService.gerarLinkWaze(origemCoords);
+      linkWaze.href = RotaService.gerarLinkWaze(rota[0].coords);
       cardOtimizada.classList.remove("hidden");
       Dom.showToast(`Rota calculada: ${distanciaTotal.toFixed(1)} km`, "success");
     } catch (err) {

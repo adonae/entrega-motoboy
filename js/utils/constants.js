@@ -17,6 +17,15 @@ export const STORAGE_KEYS = {
   ENDERECO_LOJA: "endereco_loja",
 };
 
+export const LOJA = {
+  ENDERECO: "Avenida Tabajaras, 848, Centro, Joao Pessoa - PB, CEP 58013-270",
+  COORDS: {
+    lat: -7.1235,
+    lng: -34.87785,
+    display: "Avenida Tabajaras, Centro, Joao Pessoa - PB, CEP 58013-270",
+  },
+};
+
 /** Mensagens de erro padronizadas. */
 export const MENSAGENS = {
   ENTREGA_NAO_ENCONTRADA: "Entrega nao encontrada.",

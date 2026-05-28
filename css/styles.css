@@ -95,9 +95,16 @@ h3 {
   background: var(--warning);
   color: white;
 }
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
 .btn-secondary {
   background: var(--border);
   color: var(--text);
+}
+.btn-sm {
+  padding: 0.5rem 0.85rem;
 }
 .form-group {
   margin-bottom: 1rem;
@@ -118,6 +125,13 @@ h3 {
   outline: 2px solid var(--primary);
   border-color: transparent;
 }
+.input-action {
+  display: flex;
+  gap: 0.5rem;
+}
+.input-action .btn {
+  flex: 0 0 auto;
+}
 .address-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -137,6 +151,12 @@ h3 {
 }
 .field-hint.success {
   color: var(--success);
+}
+.delivery-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .status-badge {
   display: inline-block;
@@ -208,6 +228,9 @@ a:hover {
     grid-template-columns: 1fr;
     gap: 0;
   }
+  .input-action {
+    flex-direction: column;
+  }
   .form-group-small {
     max-width: none;
   }
@@ -216,5 +239,9 @@ a:hover {
   }
   .btn {
     width: 100%;
+  }
+  .delivery-actions {
+    width: 100%;
+    justify-content: stretch;
   }
 }

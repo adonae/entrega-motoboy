@@ -8,11 +8,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const cardConfirmacao = document.getElementById("card-confirmacao");
   const detalhesEl = document.getElementById("detalhes-entrega");
   const btnConfirmar = document.getElementById("btn-confirmar");
+  const btnEditar = document.getElementById("btn-editar-entrega");
+  const btnExcluir = document.getElementById("btn-excluir-entrega");
 
   if (!entregaId) {
     Dom.showError(cardEntrega, "ID nao informado.");
     return;
   }
+
+  btnEditar.href = `index.html?editar=${encodeURIComponent(entregaId)}`;
+
+  btnExcluir.addEventListener("click", async () => {
+    if (!window.confirm("Excluir esta entrega? Essa acao nao pode ser desfeita.")) {
+      return;
+    }
+
+    Dom.setLoading(btnExcluir, true, "Excluindo...");
+    try {
+      await EntregaService.excluir(entregaId);
+      Dom.showToast("Entrega excluida.", "success");
+      setTimeout(() => (window.location.href = "index.html"), 800);
+    } catch (err) {
+      console.error(err);
+      Dom.showToast(err.message || "Erro ao excluir.", "error");
+    } finally {
+      Dom.setLoading(btnExcluir, false);
+    }
+  });
 
   async function carregar() {
     try {

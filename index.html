@@ -43,25 +43,30 @@
         <form id="form-nova-entrega" class="flex flex-col">
           <div class="form-group">
             <label for="cliente-nome">Nome do cliente</label>
-            <input type="text" id="cliente-nome" class="form-control" required />
+            <input type="text" id="cliente-nome" class="form-control" placeholder="Ex: João" required />
           </div>
           <div class="form-group">
             <label for="cliente-telefone">Telefone</label>
-            <input type="tel" id="cliente-telefone" class="form-control" required />
+            <input type="tel" id="cliente-telefone" class="form-control" placeholder="(83) 9 9999-9999" required />
           </div>
           <div class="address-grid">
             <div class="form-group">
               <label for="cliente-cep">CEP</label>
-              <input
-                type="text"
-                id="cliente-cep"
-                class="form-control"
-                inputmode="numeric"
-                maxlength="9"
-                autocomplete="postal-code"
-                placeholder="00000-000"
-                required
-              />
+              <div class="input-action">
+                <input
+                  type="text"
+                  id="cliente-cep"
+                  class="form-control"
+                  inputmode="numeric"
+                  maxlength="9"
+                  autocomplete="postal-code"
+                  placeholder="00000-000"
+                  required
+                />
+                <button type="button" id="btn-buscar-cep" class="btn btn-secondary">
+                  Buscar
+                </button>
+              </div>
               <small id="cep-status" class="field-hint"></small>
             </div>
             <div class="form-group">
@@ -89,11 +94,11 @@
           </div>
           <div class="form-group">
             <label for="cliente-complemento">Complemento</label>
-            <input type="text" id="cliente-complemento" class="form-control" />
+            <input type="text" id="cliente-complemento" class="form-control" placeholder="Ex: Casa" />
           </div>
           <div class="form-group">
             <label for="cliente-obs">Observacoes</label>
-            <textarea id="cliente-obs" class="form-control" rows="3"></textarea>
+            <textarea id="cliente-obs" class="form-control" rows="3" placeholder="Ex: Entrega até 18hrs"></textarea>
           </div>
           <div class="flex">
             <button type="submit" id="btn-criar" class="btn btn-primary">Criar entrega</button>

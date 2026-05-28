@@ -10,7 +10,13 @@ export const ViaCepService = {
       throw new Error("Informe um CEP com 8 digitos.");
     }
 
-    const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    let response;
+
+    try {
+      response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    } catch {
+      throw new Error("Nao foi possivel conectar ao ViaCEP.");
+    }
 
     if (!response.ok) {
       throw new Error("Nao foi possivel consultar o CEP.");

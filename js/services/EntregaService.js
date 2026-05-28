@@ -26,6 +26,29 @@ export const EntregaService = {
     });
   },
 
+  async editar(id, { nome, telefone, endereco, observacoes, enderecoDetalhes }) {
+    if (!id) {
+      throw new Error(MENSAGENS.ID_INVALIDO);
+    }
+    if (!nome || !telefone || !endereco) {
+      throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
+    }
+    return EntregaRepository.update(id, {
+      nome,
+      telefone,
+      endereco,
+      enderecoDetalhes: enderecoDetalhes ?? null,
+      observacoes: observacoes ?? "",
+    });
+  },
+
+  async excluir(id) {
+    if (!id) {
+      throw new Error(MENSAGENS.ID_INVALIDO);
+    }
+    return EntregaRepository.delete(id);
+  },
+
   async buscarPorId(id) {
     const entrega = await EntregaRepository.getById(id);
     if (!entrega) throw new Error(MENSAGENS.ENTREGA_NAO_ENCONTRADA);
