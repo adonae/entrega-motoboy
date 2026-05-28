@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rastrear Entrega</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header style="margin-bottom: 2rem">
+        <a href="index.html" class="btn btn-secondary">Voltar ao painel</a>
+        <h1>Rastrear Entrega</h1>
+      </header>
+
+      <div class="card">
+        <div class="form-group">
+          <label for="input-rastreio">Codigo ou ID da entrega</label>
+          <div class="flex">
+            <input
+              type="text"
+              id="input-rastreio"
+              class="form-control"
+              placeholder="Ex: id_da_entrega"
+            />
+            <button id="btn-buscar" class="btn btn-primary">Rastrear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card hidden" id="card-status">
+        <h2>Localizacao em tempo real</h2>
+        <p class="text-muted">Atualiza automaticamente</p>
+        <div
+          id="mapa-container"
+          style="
+            height: 300px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <span class="loading">Buscando sua entrega...</span>
+        </div>
+        <div id="timeline-status" class="mt-1"></div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script type="module" src="js/pages/rastrear.js"></script>
+  </body>
+</html>

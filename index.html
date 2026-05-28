@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Entregas</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="flex justify-between items-center" style="margin-bottom: 2rem">
+        <div>
+          <h1>Painel de Entregas</h1>
+          <p class="text-muted">Cadastre entregas e acompanhe o status do dia.</p>
+        </div>
+        <nav class="flex">
+          <a href="rota.html" class="btn btn-secondary">Rota do dia</a>
+          <a href="rastrear.html" class="btn btn-secondary">Rastrear</a>
+        </nav>
+      </header>
+
+      <section class="stats-grid">
+        <div class="card stat-card">
+          <span class="text-muted">Total</span>
+          <strong id="stat-total">0</strong>
+        </div>
+        <div class="card stat-card">
+          <span class="text-muted">Pendentes</span>
+          <strong id="stat-pending">0</strong>
+        </div>
+        <div class="card stat-card">
+          <span class="text-muted">Em rota</span>
+          <strong id="stat-route">0</strong>
+        </div>
+        <div class="card stat-card">
+          <span class="text-muted">Entregues</span>
+          <strong id="stat-delivered">0</strong>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Nova entrega</h2>
+        <form id="form-nova-entrega" class="flex flex-col">
+          <div class="form-group">
+            <label for="cliente-nome">Nome do cliente</label>
+            <input type="text" id="cliente-nome" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="cliente-telefone">Telefone</label>
+            <input type="tel" id="cliente-telefone" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="cliente-endereco">Endereco</label>
+            <input type="text" id="cliente-endereco" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label for="cliente-obs">Observacoes</label>
+            <textarea id="cliente-obs" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="flex">
+            <button type="submit" id="btn-criar" class="btn btn-primary">Criar entrega</button>
+            <button type="button" id="btn-cancelar" class="btn btn-secondary">Limpar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Entregas cadastradas</h2>
+        <ul id="lista-entregas" class="list-clean">
+          <li class="loading">Carregando...</li>
+        </ul>
+      </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script type="module" src="js/pages/index.js"></script>
+  </body>
+</html>

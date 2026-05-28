@@ -1,0 +1,15 @@
+# Credenciais sensiveis
+js/config.js
+
+# Arquivos gerados por ferramentas locais
+.agents/
+.firebase/
+skills-lock.json
+
+# Outros arquivos de sistema
+.DS_Store
+
+*.log
+firebase-debug.log
+node_modules/
+.env

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rota do Dia</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="flex justify-between items-center" style="margin-bottom: 2rem">
+        <a href="index.html" class="btn btn-secondary">Voltar ao painel</a>
+        <h1>Rota do Dia</h1>
+      </header>
+
+      <div class="card">
+        <h2>Ponto de partida</h2>
+        <form id="form-loja" class="flex flex-col">
+          <input
+            type="text"
+            id="endereco-loja"
+            class="form-control"
+            placeholder="Endereco da loja"
+            required
+          />
+          <button type="submit" class="btn btn-primary mt-1">Salvar endereco</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <h2>Entregas de hoje</h2>
+          <button id="btn-calcular-rota" class="btn btn-primary">
+            Calcular melhor rota
+          </button>
+        </div>
+        <ul id="lista-rota" class="list-clean">
+          <li class="loading">Carregue as entregas para calcular a rota.</li>
+        </ul>
+      </div>
+
+      <div class="card hidden" id="card-rota-otimizada">
+        <h2>Rota otimizada</h2>
+        <div class="flex mt-1">
+          <a id="link-waze" href="#" target="_blank" class="btn btn-secondary">Waze</a>
+          <a id="link-gmaps" href="#" target="_blank" class="btn btn-secondary">Google Maps</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script type="module" src="js/pages/rota.js"></script>
+  </body>
+</html>

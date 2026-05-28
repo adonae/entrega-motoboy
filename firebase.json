@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".gitignore",
+      "LEIA-ME.md",
+      "skills-lock.json",
+      "firebase-debug.log",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "emulators": {
+    "hosting": {
+      "host": "127.0.0.1",
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true
+    }
+  }
+}

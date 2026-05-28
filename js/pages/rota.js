@@ -1,0 +1,65 @@
+import { EntregaService } from "../services/EntregaService.js";
+import { RotaService } from "../services/RotaService.js";
+import { Dom } from "../utils/dom.js";
+import { STORAGE_KEYS } from "../utils/constants.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnCalcular = document.getElementById("btn-calcular-rota");
+  const listaRota = document.getElementById("lista-rota");
+  const cardOtimizada = document.getElementById("card-rota-otimizada");
+  const linkWaze = document.getElementById("link-waze");
+  const linkGmaps = document.getElementById("link-gmaps");
+  const inputLoja = document.getElementById("endereco-loja");
+  const formLoja = document.getElementById("form-loja");
+
+  inputLoja.value = localStorage.getItem(STORAGE_KEYS.ENDERECO_LOJA) ?? "";
+  formLoja.addEventListener("submit", (e) => {
+    e.preventDefault();
+    localStorage.setItem(STORAGE_KEYS.ENDERECO_LOJA, inputLoja.value.trim());
+    Dom.showToast("Endereco salvo!", "success");
+  });
+
+  btnCalcular.addEventListener("click", async () => {
+    Dom.setLoading(btnCalcular, true, "Otimizando rota...");
+    listaRota.innerHTML = `<li class="loading">Geocodificando enderecos...</li>`;
+
+    try {
+      const entregas = await EntregaService.listarPendentes();
+      if (!entregas.length) {
+        listaRota.innerHTML = `<li class="text-muted">Nenhuma entrega pendente.</li>`;
+        return;
+      }
+
+      const enderecoOrigem = inputLoja.value.trim() || "Sao Paulo, Brasil";
+      const { rota, distanciaTotal, origemCoords } = await RotaService.calcular(
+        enderecoOrigem,
+        entregas,
+      );
+
+      listaRota.innerHTML = "";
+      rota.forEach((entrega, idx) => {
+        const li = document.createElement("li");
+        li.className = "flex justify-between items-center mt-1";
+        li.innerHTML = `
+          <div>
+            <strong>${idx + 1}.</strong> ${Dom.escapeHtml(entrega.nome)}<br>
+            <small class="text-muted">${Dom.escapeHtml(entrega.endereco)}</small>
+          </div>
+        `;
+        listaRota.appendChild(li);
+      });
+
+      linkGmaps.href = RotaService.gerarLinkGoogleMaps(origemCoords, rota);
+      linkWaze.href = RotaService.gerarLinkWaze(origemCoords);
+      cardOtimizada.classList.remove("hidden");
+      Dom.showToast(`Rota calculada: ${distanciaTotal.toFixed(1)} km`, "success");
+    } catch (err) {
+      console.error("[Rota] Erro:", err);
+      const message = err instanceof Error ? err.message : "Erro ao calcular rota";
+      Dom.showToast(message, "error");
+      listaRota.innerHTML = `<li class="text-muted">${Dom.escapeHtml(message)}</li>`;
+    } finally {
+      Dom.setLoading(btnCalcular, false);
+    }
+  });
+});
