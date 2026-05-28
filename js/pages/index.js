@@ -1,4 +1,5 @@
 import { EntregaService } from "../services/EntregaService.js";
+import { ViaCepService } from "../services/ViaCepService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 
@@ -7,13 +8,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCriar = document.getElementById("btn-criar");
   const btnCancelar = document.getElementById("btn-cancelar");
   const listaEntregas = document.getElementById("lista-entregas");
+  const inputCep = document.getElementById("cliente-cep");
+  const cepStatus = document.getElementById("cep-status");
+  const camposEndereco = {
+    rua: document.getElementById("cliente-endereco"),
+    numero: document.getElementById("cliente-numero"),
+    bairro: document.getElementById("cliente-bairro"),
+    cidade: document.getElementById("cliente-cidade"),
+    uf: document.getElementById("cliente-uf"),
+    complemento: document.getElementById("cliente-complemento"),
+  };
+  let ultimoCepConsultado = "";
 
   document.getElementById("cliente-telefone").addEventListener("input", (e) => {
     e.target.value = Format.phone(e.target.value);
   });
 
+  inputCep.addEventListener("input", (e) => {
+    e.target.value = Format.cep(e.target.value);
+    cepStatus.textContent = "";
+    cepStatus.className = "field-hint";
+
+    const cepLimpo = ViaCepService.normalizarCep(e.target.value);
+    if (cepLimpo.length === 8 && cepLimpo !== ultimoCepConsultado) {
+      consultarCep(cepLimpo);
+    }
+  });
+
+  inputCep.addEventListener("blur", () => {
+    const cepLimpo = ViaCepService.normalizarCep(inputCep.value);
+    if (cepLimpo.length === 8 && cepLimpo !== ultimoCepConsultado) {
+      consultarCep(cepLimpo);
+    }
+  });
+
   btnCancelar.addEventListener("click", () => {
     form.reset();
+    ultimoCepConsultado = "";
+    cepStatus.textContent = "";
+    cepStatus.className = "field-hint";
     Dom.showToast("Formulario limpo", "info");
   });
 
@@ -24,11 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
       await EntregaService.criar({
         nome: document.getElementById("cliente-nome").value.trim(),
         telefone: document.getElementById("cliente-telefone").value.trim(),
-        endereco: document.getElementById("cliente-endereco").value.trim(),
+        endereco: montarEndereco(),
         observacoes: document.getElementById("cliente-obs").value.trim(),
+        enderecoDetalhes: obterEnderecoDetalhes(),
       });
       Dom.showToast("Entrega criada com sucesso!", "success");
       form.reset();
+      ultimoCepConsultado = "";
+      cepStatus.textContent = "";
+      cepStatus.className = "field-hint";
       carregarEntregas();
     } catch (err) {
       console.error(err);
@@ -37,6 +74,57 @@ document.addEventListener("DOMContentLoaded", () => {
       Dom.setLoading(btnCriar, false);
     }
   });
+
+  async function consultarCep(cep) {
+    ultimoCepConsultado = cep;
+    cepStatus.textContent = "Buscando endereco...";
+    cepStatus.className = "field-hint";
+    inputCep.disabled = true;
+
+    try {
+      const endereco = await ViaCepService.buscar(cep);
+      inputCep.value = endereco.cep;
+      camposEndereco.rua.value = endereco.logradouro;
+      camposEndereco.bairro.value = endereco.bairro;
+      camposEndereco.cidade.value = endereco.cidade;
+      camposEndereco.uf.value = endereco.uf;
+      cepStatus.textContent = "Endereco preenchido. Confira numero e complemento.";
+      cepStatus.className = "field-hint success";
+      camposEndereco.numero.focus();
+    } catch (err) {
+      ultimoCepConsultado = "";
+      cepStatus.textContent = err.message || "Erro ao buscar CEP.";
+      cepStatus.className = "field-hint error";
+    } finally {
+      inputCep.disabled = false;
+    }
+  }
+
+  function obterEnderecoDetalhes() {
+    return {
+      cep: inputCep.value.trim(),
+      rua: camposEndereco.rua.value.trim(),
+      numero: camposEndereco.numero.value.trim(),
+      bairro: camposEndereco.bairro.value.trim(),
+      cidade: camposEndereco.cidade.value.trim(),
+      uf: camposEndereco.uf.value.trim().toUpperCase(),
+      complemento: camposEndereco.complemento.value.trim(),
+    };
+  }
+
+  function montarEndereco() {
+    const detalhes = obterEnderecoDetalhes();
+    const complemento = detalhes.complemento ? `, ${detalhes.complemento}` : "";
+
+    return [
+      `${detalhes.rua}, ${detalhes.numero}${complemento}`,
+      detalhes.bairro,
+      `${detalhes.cidade} - ${detalhes.uf}`,
+      `CEP ${detalhes.cep}`,
+    ]
+      .filter(Boolean)
+      .join(" - ");
+  }
 
   async function carregarEntregas() {
     listaEntregas.innerHTML = `<li class="loading">Carregando...</li>`;

@@ -1,4 +1,11 @@
 export const Format = {
+  cep(cep) {
+    const digits = cep.replace(/\D/g, "").slice(0, 8);
+    return digits.length > 5
+      ? `${digits.slice(0, 5)}-${digits.slice(5)}`
+      : digits;
+  },
+
   phone(phone) {
     const digits = phone.replace(/\D/g, "");
     return digits.length >= 11

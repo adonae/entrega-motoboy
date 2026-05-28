@@ -49,9 +49,47 @@
             <label for="cliente-telefone">Telefone</label>
             <input type="tel" id="cliente-telefone" class="form-control" required />
           </div>
+          <div class="address-grid">
+            <div class="form-group">
+              <label for="cliente-cep">CEP</label>
+              <input
+                type="text"
+                id="cliente-cep"
+                class="form-control"
+                inputmode="numeric"
+                maxlength="9"
+                autocomplete="postal-code"
+                placeholder="00000-000"
+                required
+              />
+              <small id="cep-status" class="field-hint"></small>
+            </div>
+            <div class="form-group">
+              <label for="cliente-numero">Numero</label>
+              <input type="text" id="cliente-numero" class="form-control" required />
+            </div>
+          </div>
           <div class="form-group">
-            <label for="cliente-endereco">Endereco</label>
+            <label for="cliente-endereco">Rua</label>
             <input type="text" id="cliente-endereco" class="form-control" required />
+          </div>
+          <div class="address-grid">
+            <div class="form-group">
+              <label for="cliente-bairro">Bairro</label>
+              <input type="text" id="cliente-bairro" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="cliente-cidade">Cidade</label>
+              <input type="text" id="cliente-cidade" class="form-control" required />
+            </div>
+            <div class="form-group form-group-small">
+              <label for="cliente-uf">UF</label>
+              <input type="text" id="cliente-uf" class="form-control" maxlength="2" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cliente-complemento">Complemento</label>
+            <input type="text" id="cliente-complemento" class="form-control" />
           </div>
           <div class="form-group">
             <label for="cliente-obs">Observacoes</label>

@@ -12,7 +12,7 @@ import { serverTimestamp } from "../firebase.js";
 import { STATUS, MENSAGENS } from "../utils/constants.js";
 
 export const EntregaService = {
-  async criar({ nome, telefone, endereco, observacoes }) {
+  async criar({ nome, telefone, endereco, observacoes, enderecoDetalhes }) {
     if (!nome || !telefone || !endereco) {
       throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
     }
@@ -20,6 +20,7 @@ export const EntregaService = {
       nome,
       telefone,
       endereco,
+      enderecoDetalhes: enderecoDetalhes ?? null,
       observacoes: observacoes ?? "",
       status: STATUS.PENDENTE,
     });
