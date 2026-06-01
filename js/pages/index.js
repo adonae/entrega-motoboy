@@ -3,28 +3,36 @@ import { ViaCepService } from "../services/ViaCepService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 
+function getEl(id) {
+  const el = document.getElementById(id);
+  if (!el) console.warn(`Elemento #${id} nao encontrado no DOM`);
+  return el;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("form-nova-entrega");
-  const btnCriar = document.getElementById("btn-criar");
-  const btnCancelar = document.getElementById("btn-cancelar");
-  const btnBuscarCep = document.getElementById("btn-buscar-cep");
-  const listaEntregas = document.getElementById("lista-entregas");
-  const tituloForm = document.querySelector("#form-nova-entrega").closest(".card").querySelector("h2");
-  const inputCep = document.getElementById("cliente-cep");
-  const cepStatus = document.getElementById("cep-status");
+  const form = getEl("form-nova-entrega");
+  if (!form) return;
+  const btnCriar = getEl("btn-criar");
+  const btnCancelar = getEl("btn-cancelar");
+  const btnBuscarCep = getEl("btn-buscar-cep");
+  const listaEntregas = getEl("lista-entregas");
+  const tituloForm = document.querySelector("#form-nova-entrega")?.closest(".card")?.querySelector("h2") ?? null;
+  const inputCep = getEl("cliente-cep");
+  const cepStatus = getEl("cep-status");
   const entregaParaEditar = new URLSearchParams(window.location.search).get("editar");
   const camposEndereco = {
-    rua: document.getElementById("cliente-endereco"),
-    numero: document.getElementById("cliente-numero"),
-    bairro: document.getElementById("cliente-bairro"),
-    cidade: document.getElementById("cliente-cidade"),
-    uf: document.getElementById("cliente-uf"),
-    complemento: document.getElementById("cliente-complemento"),
+    rua: getEl("cliente-endereco"),
+    numero: getEl("cliente-numero"),
+    bairro: getEl("cliente-bairro"),
+    cidade: getEl("cliente-cidade"),
+    uf: getEl("cliente-uf"),
+    complemento: getEl("cliente-complemento"),
   };
   let ultimoCepConsultado = "";
   let entregaEmEdicao = null;
   let entregasCarregadas = [];
   let edicaoInicialCarregada = false;
+  let cepController = null;
 
   document.getElementById("cliente-telefone").addEventListener("input", (e) => {
     e.target.value = Format.phone(e.target.value);
@@ -108,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
     form.reset();
     entregaEmEdicao = null;
     ultimoCepConsultado = "";
-    edicaoInicialCarregada = true;
     tituloForm.textContent = "Nova entrega";
     btnCriar.textContent = "Criar entrega";
     btnCancelar.textContent = "Limpar";
@@ -167,6 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function consultarCep(cep) {
+    if (cepController) cepController.abort();
+    cepController = new AbortController();
+
     ultimoCepConsultado = cep;
     cepStatus.textContent = "Buscando endereco...";
     cepStatus.className = "field-hint";
@@ -174,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Dom.setLoading(btnBuscarCep, true, "...");
 
     try {
-      const endereco = await ViaCepService.buscar(cep);
+      const endereco = await ViaCepService.buscar(cep, cepController.signal);
       inputCep.value = endereco.cep;
       camposEndereco.rua.value = endereco.logradouro;
       camposEndereco.bairro.value = endereco.bairro;

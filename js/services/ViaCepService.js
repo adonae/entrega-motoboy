@@ -3,7 +3,7 @@ export const ViaCepService = {
     return String(cep ?? "").replace(/\D/g, "");
   },
 
-  async buscar(cep) {
+  async buscar(cep, signal) {
     const cepLimpo = this.normalizarCep(cep);
 
     if (cepLimpo.length !== 8) {
@@ -13,7 +13,7 @@ export const ViaCepService = {
     let response;
 
     try {
-      response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`, { signal });
     } catch {
       throw new Error("Nao foi possivel conectar ao ViaCEP.");
     }

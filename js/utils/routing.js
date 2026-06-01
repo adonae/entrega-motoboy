@@ -1,5 +1,14 @@
 export const RoutingUtils = {
   cache: new Map(),
+  CACHE_MAX: 200,
+
+  _cacheSet(key, value) {
+    if (this.cache.size >= this.CACHE_MAX) {
+      const oldest = this.cache.keys().next().value;
+      this.cache.delete(oldest);
+    }
+    this.cache.set(key, value);
+  },
 
   async geocodeEntrega(entrega) {
     const detalhes = entrega.enderecoDetalhes ?? {};
@@ -52,7 +61,7 @@ export const RoutingUtils = {
       (await this.geocodePhoton(cleanAddress)) ||
       (await this.geocodeNominatim(cleanAddress));
 
-    this.cache.set(key, coords);
+    this._cacheSet(key, coords);
     return coords;
   },
 

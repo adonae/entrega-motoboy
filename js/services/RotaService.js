@@ -1,4 +1,4 @@
-import { RoutingUtils } from "../routing.js";
+import { RoutingUtils } from "../utils/routing.js";
 
 const RATE_LIMIT_MS = 1100; // Nominatim: 1 req/seg
 
@@ -29,16 +29,18 @@ export const RotaService = {
       throw new Error("Nenhum endereco valido encontrado.");
     }
 
+    const pontos = entregasComCoords.map((entrega) => ({
+      id: entrega.id,
+      ...entrega.coords,
+    }));
+
     const { route, distance } = RoutingUtils.nearestNeighborTSP(
       origemCoords,
-      entregasComCoords.map((entrega) => entrega.coords),
+      pontos,
     );
 
-    const rotaOrdenada = route.map((coords) =>
-      entregasComCoords.find(
-        (entrega) =>
-          entrega.coords.lat === coords.lat && entrega.coords.lng === coords.lng,
-      ),
+    const rotaOrdenada = route.map((ponto) =>
+      entregasComCoords.find((entrega) => entrega.id === ponto.id),
     );
 
     return { rota: rotaOrdenada, distanciaTotal: distance, origemCoords };

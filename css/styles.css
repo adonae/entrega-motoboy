@@ -165,11 +165,6 @@ h3 {
   font-size: 0.875rem;
   font-weight: 500;
 }
-
-/* CORREÇÃO: classes renomeadas para casar com os valores reais de status
-   gerados pelo JS (status-pendente, status-em_rota, status-entregue).
-   As classes antigas (status-pending, status-in-route, status-delivered)
-   foram substituídas. */
 .status-pendente {
   background: #fef3c7;
   color: #92400e;

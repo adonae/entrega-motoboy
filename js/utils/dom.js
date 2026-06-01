@@ -29,7 +29,11 @@ export const Dom = {
     if (!element) return;
     if (isLoading) {
       element.dataset.originalText = element.textContent;
-      element.innerHTML = `<span class="loading">${loadingText}</span>`;
+      element.textContent = "";
+      const span = document.createElement("span");
+      span.className = "loading";
+      span.textContent = loadingText;
+      element.appendChild(span);
       element.disabled = true;
     } else {
       element.textContent = element.dataset.originalText || "";

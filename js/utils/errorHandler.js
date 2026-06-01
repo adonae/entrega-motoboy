@@ -7,6 +7,3 @@ export function handleError(err, context = "Operacao", fallback = "Erro inespera
   return message;
 }
 
-export function logError(err, context = "Operacao") {
-  console.error(`[${context}]`, err);
-}

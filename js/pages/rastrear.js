@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let unsubscribeAtivo = null;
 
+  window.addEventListener("beforeunload", () => {
+    if (unsubscribeAtivo) unsubscribeAtivo();
+  });
+
   function renderizarEntrega(entrega) {
     mapaContainer.innerHTML = `
       <div style="text-align:center;">
