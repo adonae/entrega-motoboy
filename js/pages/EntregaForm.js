@@ -95,8 +95,9 @@ export function initEntregaForm(state) {
         await EntregaService.editar(state.entregaEmEdicao, dadosEntrega);
         Dom.showToast("Entrega atualizada com sucesso!", "success");
       } else {
-        await EntregaService.criar(dadosEntrega);
-        Dom.showToast("Entrega criada com sucesso!", "success");
+        const docRef = await EntregaService.criar(dadosEntrega);
+        const linkRastreio = `${window.location.origin}/rastrear.html?id=${docRef.id}`;
+        Dom.showLinkCriado(linkRastreio);
       }
 
       limparFormulario();
