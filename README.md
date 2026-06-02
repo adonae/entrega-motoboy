@@ -11,6 +11,42 @@ Aplicacao estatica para cadastrar entregas, calcular uma rota simples, rastrear 
 | `entrega.html` | Motoboy | Confirma uma entrega pelo ID |
 | `rastrear.html` | Cliente | Acompanha o status de uma entrega |
 
+## Estrutura do codigo
+
+```
+js/
+├── pages/
+│   ├── index.js          # Orquestrador das paginas de cadastro
+│   ├── CepController.js  # Consulta de CEP (ViaCEP, AbortController)
+│   ├── EntregaForm.js    # Formulario: criar/editar/limpar
+│   ├── EntregaList.js    # Lista: renderizar, excluir, contadores
+│   ├── entrega.js        # Pagina de confirmacao de entrega
+│   ├── rota.js           # Pagina de calculo de rota
+│   └── rastrear.js       # Pagina de acompanhamento
+├── services/
+│   ├── GeocodingService.js   # Geocodificacao (Photon, Nominatim, cache)
+│   ├── RoutingAlgorithm.js   # Haversine, TSP Nearest Neighbor (sem rede)
+│   ├── RotaService.js        # Orquestracao de rota (geocode + TSP)
+│   ├── EntregaService.js     # Regras de negocio das entregas
+│   └── ViaCepService.js      # Consulta de CEP via ViaCEP
+├── repositories/
+│   └── EntregaRepository.js  # Acesso ao Firestore
+└── utils/
+    ├── dom.js             # Helpers de DOM (toast, loading, escape)
+    ├── format.js          # Formatacao (CEP, telefone, data, status)
+    ├── constants.js       # Strings e valores fixos
+    └── errorHandler.js    # Tratamento centralizado de erros
+```
+
+Cada modulo em `pages/` exporta uma funcao `init*` que recebe um objeto `state`
+compartilhado, mantendo o `index.js` como orquestrador enxuto (~40 linhas).
+
+`RoutingAlgorithm.js` nao possui dependencia de rede nem de DOM — pode ser
+testado isoladamente com entradas de coordenadas fixas.
+
+`GeocodingService.js` e `RoutingAlgorithm.js` substituiram o antigo `routing.js`,
+que ainda existe como barrel de compatibilidade.
+
 ## Configuracao
 
 1. Crie um projeto no Firebase.
