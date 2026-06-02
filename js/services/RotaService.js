@@ -1,4 +1,5 @@
-import { RoutingUtils } from "../utils/routing.js";
+import { GeocodingService } from "./GeocodingService.js";
+import { RoutingAlgorithm } from "./RoutingAlgorithm.js";
 
 const RATE_LIMIT_MS = 1100; // Nominatim: 1 req/seg
 
@@ -8,14 +9,14 @@ export const RotaService = {
       throw new Error("Nenhuma entrega para calcular a rota.");
     }
 
-    const origemCoords = origemCoordsFixo ?? (await RoutingUtils.geocode(enderecoOrigem));
+    const origemCoords = origemCoordsFixo ?? (await GeocodingService.geocode(enderecoOrigem));
     if (!origemCoords) {
       throw new Error("Nao foi possivel geocodificar o ponto de partida.");
     }
 
     const entregasComCoords = [];
     for (let i = 0; i < entregas.length; i++) {
-      const coords = await RoutingUtils.geocodeEntrega(entregas[i]);
+      const coords = await GeocodingService.geocodeEntrega(entregas[i]);
       if (coords) {
         entregasComCoords.push({ ...entregas[i], coords });
       }
@@ -34,7 +35,7 @@ export const RotaService = {
       ...entrega.coords,
     }));
 
-    const { route, distance } = RoutingUtils.nearestNeighborTSP(
+    const { route, distance } = RoutingAlgorithm.nearestNeighborTSP(
       origemCoords,
       pontos,
     );
