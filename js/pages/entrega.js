@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cardConfirmacao = document.getElementById("card-confirmacao");
   const detalhesEl = document.getElementById("detalhes-entrega");
   const btnConfirmar = document.getElementById("btn-confirmar");
+  const btnSair = document.getElementById("btn-sair-entrega");
   const btnEditar = document.getElementById("btn-editar-entrega");
   const btnExcluir = document.getElementById("btn-excluir-entrega");
 
@@ -36,6 +37,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  btnSair.addEventListener("click", async () => {
+    Dom.setLoading(btnSair, true, "Atualizando...");
+    try {
+      await EntregaService.sairParaEntrega(entregaId);
+      Dom.showToast("Status atualizado para Em Rota!", "success");
+      carregar();
+    } catch (err) {
+      console.error(err);
+      Dom.showToast(err.message || "Erro ao atualizar status.", "error");
+    } finally {
+      Dom.setLoading(btnSair, false);
+    }
+  });
+
   async function carregar() {
     try {
       const entrega = await EntregaService.buscarPorId(entregaId);
@@ -50,6 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="status-badge ${Format.statusClass(entrega.status)}">${Dom.escapeHtml(Format.statusLabel(entrega.status))}</span>
         </p>
       `;
+
+      if (entrega.status === "pendente") {
+        btnSair.classList.remove("hidden");
+      } else {
+        btnSair.classList.add("hidden");
+      }
 
       document.getElementById("form-confirmar").addEventListener("submit", async (e) => {
         e.preventDefault();

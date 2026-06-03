@@ -76,6 +76,12 @@ export const EntregaService = {
     return EntregaRepository.listByStatus(STATUS.PENDENTE);
   },
 
+  async sairParaEntrega(id) {
+    return EntregaRepository.updateStatus(id, STATUS.EM_ROTA, {
+      saiuEm: serverTimestamp(),
+    });
+  },
+
   async confirmarEntrega(id, { observacoesEntrega = "" } = {}) {
     return EntregaRepository.updateStatus(id, STATUS.ENTREGUE, {
       entregueEm: serverTimestamp(),

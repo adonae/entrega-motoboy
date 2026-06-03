@@ -76,7 +76,7 @@ export function initEntregaList(state) {
             <button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>
             <button type="button" class="btn btn-danger btn-sm" data-excluir-id="${id}">Excluir</button>
             <a href="entrega.html?id=${id}" class="btn btn-secondary btn-sm">Abrir</a>
-            <a href="/rastrear.html?id=${id}" target="_blank" class="btn btn-secondary btn-sm">Link cliente</a>
+            <a href="rastrear.html?id=${id}" target="_blank" class="btn btn-secondary btn-sm">Link cliente</a>
           </div>
         `;
         state.listaEntregas.appendChild(li);
