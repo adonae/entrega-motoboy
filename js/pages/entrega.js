@@ -1,8 +1,19 @@
+import { AuthService } from "../services/AuthService.js";
 import { EntregaService } from "../services/EntregaService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await AuthService.init();
+  } catch (err) {
+    console.error(err);
+    Dom.showError(
+      document.getElementById("card-entrega"),
+      "Erro de autenticacao. Verifique se o login anonimo esta habilitado no Firebase Console.",
+    );
+    return;
+  }
   const entregaId = new URLSearchParams(window.location.search).get("id");
   const cardEntrega = document.getElementById("card-entrega");
   const cardConfirmacao = document.getElementById("card-confirmacao");

@@ -6,7 +6,7 @@ import { MENSAGENS } from "../utils/constants.js";
 
 const TIMELINE_STEPS = [
   { label: "Pedido criado", status: "pendente" },
-  { label: "Saiu para entrega", status: "em_rota" },
+  { label: "Saiu da loja", status: "em_rota" },
   { label: "Em rota", status: "em_rota" },
   { label: "Entregue", status: "entregue" },
 ];
