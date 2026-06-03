@@ -15,11 +15,20 @@ const STATUS_STEP_INDEX = { pendente: 0, em_rota: 2, entregue: 3 };
 
 document.addEventListener("DOMContentLoaded", () => {
   const btnBuscar = document.getElementById("btn-buscar");
+  const cardBusca = document.getElementById("card-busca-rastreio");
   const cardStatus = document.getElementById("card-status");
   const mapaContainer = document.getElementById("mapa-container");
   const timelineEl = document.getElementById("timeline-status");
+  const btnVoltar = document.getElementById("btn-voltar-painel");
 
   let unsubscribeAtivo = null;
+
+  const rastreioId = new URLSearchParams(window.location.search).get("id");
+
+  if (rastreioId) {
+    if (cardBusca) cardBusca.classList.add("hidden");
+    if (btnVoltar) btnVoltar.classList.add("hidden");
+  }
 
   window.addEventListener("beforeunload", () => {
     if (unsubscribeAtivo) unsubscribeAtivo();
@@ -54,10 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }).join("");
   }
 
-  btnBuscar.addEventListener("click", () => {
-    const id = document.getElementById("input-rastreio").value.trim();
-    if (!id) return Dom.showToast(MENSAGENS.ID_INVALIDO, "error");
-
+  function iniciarRastreio(id) {
     if (unsubscribeAtivo) {
       unsubscribeAtivo();
       unsubscribeAtivo = null;
@@ -81,5 +87,15 @@ document.addEventListener("DOMContentLoaded", () => {
         unsubscribeAtivo = null;
       },
     );
+  }
+
+  if (rastreioId) {
+    iniciarRastreio(rastreioId);
+  }
+
+  btnBuscar.addEventListener("click", () => {
+    const id = document.getElementById("input-rastreio").value.trim();
+    if (!id) return Dom.showToast(MENSAGENS.ID_INVALIDO, "error");
+    iniciarRastreio(id);
   });
 });

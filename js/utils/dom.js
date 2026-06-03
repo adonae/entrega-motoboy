@@ -57,16 +57,26 @@ export const Dom = {
     div.innerHTML = `
       <p style="margin-bottom:0.5rem;font-weight:500;">Link de rastreio criado</p>
       <div style="display:flex;gap:0.5rem;align-items:center;">
-        <input readonly value="${link}"
+        <input readonly value="${this.escapeHtml(link)}"
           style="flex:1;padding:0.5rem;border:1px solid var(--border);
                  border-radius:var(--radius);font-size:0.875rem;background:var(--bg);" />
-        <button onclick="navigator.clipboard.writeText('${link}').then(()=>this.textContent='Copiado!')"
-          class="btn btn-primary btn-sm">Copiar</button>
+        <button data-copiar-link class="btn btn-primary btn-sm">Copiar</button>
       </div>
-      <button onclick="this.closest('div').remove()"
+      <button data-fechar-card
         style="position:absolute;top:8px;right:8px;background:none;border:none;
                cursor:pointer;font-size:1.2rem;color:var(--text-muted);">×</button>
     `;
+
+    div.querySelector("[data-copiar-link]").addEventListener("click", () => {
+      navigator.clipboard.writeText(link).then(() => {
+        div.querySelector("[data-copiar-link]").textContent = "Copiado!";
+      });
+    });
+
+    div.querySelector("[data-fechar-card]").addEventListener("click", () => {
+      div.remove();
+    });
+
     document.body.appendChild(div);
   },
 };

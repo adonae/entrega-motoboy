@@ -14,6 +14,27 @@ export function initEntregaList(state) {
     document.getElementById("stat-delivered").textContent = contagem.entregue;
   }
 
+  async function sairParaEntrega(id, button) {
+    const entrega = state.entregasCarregadas.find((item) => item.id === id);
+    const nome = entrega?.nome ? ` de ${entrega.nome}` : "";
+
+    if (!window.confirm(`Sair para entrega${nome}?`)) {
+      return;
+    }
+
+    Dom.setLoading(button, true, "Atualizando...");
+    try {
+      await EntregaService.sairParaEntrega(id);
+      Dom.showToast("Status atualizado para Em Rota!", "success");
+      carregarEntregas();
+    } catch (err) {
+      console.error(err);
+      Dom.showToast(err.message || "Erro ao atualizar.", "error");
+    } finally {
+      Dom.setLoading(button, false);
+    }
+  }
+
   async function excluirEntrega(id, button) {
     const entrega = state.entregasCarregadas.find((item) => item.id === id);
     const nome = entrega?.nome ? ` de ${entrega.nome}` : "";
@@ -73,6 +94,7 @@ export function initEntregaList(state) {
             <span class="status-badge ${statusClass}">${statusLabel}</span>
           </div>
           <div class="delivery-actions">
+            ${entrega.status === "pendente" ? `<button type="button" class="btn btn-primary btn-sm" data-sair-id="${id}">Sair p/ entrega</button>` : ""}
             <button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>
             <button type="button" class="btn btn-danger btn-sm" data-excluir-id="${id}">Excluir</button>
             <a href="entrega.html?id=${id}" class="btn btn-secondary btn-sm">Abrir</a>
@@ -90,8 +112,14 @@ export function initEntregaList(state) {
   }
 
   state.listaEntregas.addEventListener("click", async (e) => {
+    const btnSair = e.target.closest("[data-sair-id]");
     const btnEditar = e.target.closest("[data-editar-id]");
     const btnExcluir = e.target.closest("[data-excluir-id]");
+
+    if (btnSair) {
+      await sairParaEntrega(btnSair.dataset.sairId, btnSair);
+      return;
+    }
 
     if (btnEditar) {
       const entrega = state.entregasCarregadas.find((item) => item.id === btnEditar.dataset.editarId);

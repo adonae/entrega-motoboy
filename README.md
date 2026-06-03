@@ -79,20 +79,15 @@ npx -y firebase-tools@latest deploy --only hosting
 
 ## Regras de seguranca
 
-Durante testes, use regras permissivas apenas temporariamente. Antes de usar em producao, configure autenticacao e restrinja escrita/leitura conforme o papel de cada usuario.
+As regras do Firestore estao definidas em `firestore.rules`:
 
-Exemplo temporario para testes:
+- **Leitura**: publica (`allow read: if true`) — o cliente consegue rastrear sem autenticacao.
+- **Escrita**: restrita a usuarios autenticados (`allow write: if request.auth != null`).
 
-```js
-rules_version = '2';
+Aplique com:
 
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /entregas/{entregaId} {
-      allow read, write: if true;
-    }
-  }
-}
+```bash
+npx -y firebase-tools@latest deploy --only firestore
 ```
 
 ## Observacoes
