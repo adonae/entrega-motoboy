@@ -1,6 +1,7 @@
 import { EntregaService } from "../services/EntregaService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
+import { handleError } from "../utils/errorHandler.js";
 
 export function initEntregaList(state) {
   let onEditar = null;
@@ -28,8 +29,7 @@ export function initEntregaList(state) {
       Dom.showToast("Status atualizado para Em Rota!", "success");
       carregarEntregas();
     } catch (err) {
-      console.error(err);
-      Dom.showToast(err.message || "Erro ao atualizar.", "error");
+      handleError(err, "Sair para entrega", "Erro ao atualizar.");
     } finally {
       Dom.setLoading(button, false);
     }
@@ -50,8 +50,7 @@ export function initEntregaList(state) {
       Dom.showToast("Entrega excluida.", "success");
       carregarEntregas();
     } catch (err) {
-      console.error(err);
-      Dom.showToast(err.message || "Erro ao excluir.", "error");
+      handleError(err, "Excluir entrega", "Erro ao excluir.");
     } finally {
       Dom.setLoading(button, false);
     }
@@ -106,7 +105,7 @@ export function initEntregaList(state) {
 
       atualizarContadores(entregas);
     } catch (err) {
-      console.error(err);
+      handleError(err, "Carregar entregas", "Erro ao carregar.");
       state.listaEntregas.innerHTML = `<li class="text-muted">Erro ao carregar.</li>`;
     }
   }

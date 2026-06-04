@@ -48,6 +48,9 @@ export const RotaService = {
   },
 
   gerarLinkGoogleMaps(origemCoords, rota) {
+    if (!rota?.length) {
+      return "";
+    }
     const destino = rota[rota.length - 1].coords;
     const waypoints = rota
       .slice(0, -1)
@@ -59,6 +62,9 @@ export const RotaService = {
   },
 
   gerarLinkWaze(destinoCoords) {
+    if (!destinoCoords) {
+      return "";
+    }
     return `https://waze.com/ul?ll=${destinoCoords.lat},${destinoCoords.lng}&navigate=yes`;
   },
 };

@@ -12,32 +12,55 @@ import { serverTimestamp } from "../firebase.js";
 import { STATUS, MENSAGENS } from "../utils/constants.js";
 
 export const EntregaService = {
-  async criar({ nome, telefone, endereco, observacoes, enderecoDetalhes }) {
-    if (!nome || !telefone || !endereco) {
+  montarEndereco(detalhes) {
+    if (!detalhes?.rua || !detalhes?.numero || !detalhes?.cidade || !detalhes?.uf) {
+      return "";
+    }
+    const complemento = detalhes.complemento ? `, ${detalhes.complemento}` : "";
+    return [
+      `${detalhes.rua}, ${detalhes.numero}${complemento}`,
+      detalhes.bairro,
+      `${detalhes.cidade} - ${detalhes.uf}`,
+      `CEP ${detalhes.cep}`,
+    ]
+      .filter(Boolean)
+      .join(" - ");
+  },
+
+  async criar({ nome, telefone, observacoes, enderecoDetalhes }) {
+    if (!nome || !telefone || !enderecoDetalhes) {
+      throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
+    }
+    const endereco = this.montarEndereco(enderecoDetalhes);
+    if (!endereco) {
       throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
     }
     return EntregaRepository.add({
       nome,
       telefone,
       endereco,
-      enderecoDetalhes: enderecoDetalhes ?? null,
+      enderecoDetalhes,
       observacoes: observacoes ?? "",
       status: STATUS.PENDENTE,
     });
   },
 
-  async editar(id, { nome, telefone, endereco, observacoes, enderecoDetalhes }) {
+  async editar(id, { nome, telefone, observacoes, enderecoDetalhes }) {
     if (!id) {
       throw new Error(MENSAGENS.ID_INVALIDO);
     }
-    if (!nome || !telefone || !endereco) {
+    if (!nome || !telefone || !enderecoDetalhes) {
+      throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
+    }
+    const endereco = this.montarEndereco(enderecoDetalhes);
+    if (!endereco) {
       throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
     }
     return EntregaRepository.update(id, {
       nome,
       telefone,
       endereco,
-      enderecoDetalhes: enderecoDetalhes ?? null,
+      enderecoDetalhes,
       observacoes: observacoes ?? "",
     });
   },

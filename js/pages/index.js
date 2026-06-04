@@ -2,12 +2,13 @@ import { AuthService } from "../services/AuthService.js";
 import { initCepController } from "./CepController.js";
 import { initEntregaForm } from "./EntregaForm.js";
 import { initEntregaList } from "./EntregaList.js";
+import { handleError } from "../utils/errorHandler.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     await AuthService.init();
   } catch (err) {
-    console.error(err);
+    handleError(err, "Autenticacao");
     document.getElementById("lista-entregas").innerHTML =
       `<li class="text-muted">Erro de autenticacao. Verifique se o login anonimo esta habilitado no Firebase Console.</li>`;
     return;

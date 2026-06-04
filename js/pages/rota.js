@@ -1,6 +1,7 @@
 import { EntregaService } from "../services/EntregaService.js";
 import { RotaService } from "../services/RotaService.js";
 import { Dom } from "../utils/dom.js";
+import { handleError } from "../utils/errorHandler.js";
 import { LOJA } from "../utils/constants.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -48,9 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
       cardOtimizada.classList.remove("hidden");
       Dom.showToast(`Rota calculada: ${distanciaTotal.toFixed(1)} km`, "success");
     } catch (err) {
-      console.error("[Rota] Erro:", err);
-      const message = err instanceof Error ? err.message : "Erro ao calcular rota";
-      Dom.showToast(message, "error");
+      const message = handleError(err, "Rota", "Erro ao calcular rota");
       listaRota.innerHTML = `<li class="text-muted">${Dom.escapeHtml(message)}</li>`;
     } finally {
       Dom.setLoading(btnCalcular, false);

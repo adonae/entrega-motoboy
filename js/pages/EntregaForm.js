@@ -1,6 +1,7 @@
 import { EntregaService } from "../services/EntregaService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
+import { handleError } from "../utils/errorHandler.js";
 
 export function initEntregaForm(state) {
   let onSalvar = null;
@@ -56,19 +57,6 @@ export function initEntregaForm(state) {
     };
   }
 
-  function montarEndereco() {
-    const detalhes = obterEnderecoDetalhes();
-    const complemento = detalhes.complemento ? `, ${detalhes.complemento}` : "";
-    return [
-      `${detalhes.rua}, ${detalhes.numero}${complemento}`,
-      detalhes.bairro,
-      `${detalhes.cidade} - ${detalhes.uf}`,
-      `CEP ${detalhes.cep}`,
-    ]
-      .filter(Boolean)
-      .join(" - ");
-  }
-
   document.getElementById("cliente-telefone").addEventListener("input", (e) => {
     e.target.value = Format.phone(e.target.value);
   });
@@ -86,7 +74,6 @@ export function initEntregaForm(state) {
       const dadosEntrega = {
         nome: document.getElementById("cliente-nome").value.trim(),
         telefone: document.getElementById("cliente-telefone").value.trim(),
-        endereco: montarEndereco(),
         observacoes: document.getElementById("cliente-obs").value.trim(),
         enderecoDetalhes: obterEnderecoDetalhes(),
       };
@@ -103,8 +90,7 @@ export function initEntregaForm(state) {
       limparFormulario();
       if (onSalvar) onSalvar();
     } catch (err) {
-      console.error(err);
-      Dom.showToast(err.message || "Erro ao salvar.", "error");
+      handleError(err, "Salvar entrega", "Erro ao salvar.");
     } finally {
       Dom.setLoading(state.btnCriar, false);
     }

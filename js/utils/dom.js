@@ -27,17 +27,26 @@ export const Dom = {
 
   setLoading(element, isLoading, loadingText = "Carregando...") {
     if (!element) return;
+    const key = "opencodeLoadingCount";
+    element[key] = element[key] || 0;
+
     if (isLoading) {
-      element.dataset.originalText = element.textContent;
-      element.textContent = "";
-      const span = document.createElement("span");
-      span.className = "loading";
-      span.textContent = loadingText;
-      element.appendChild(span);
-      element.disabled = true;
+      if (element[key] === 0) {
+        element.dataset.originalText = element.textContent;
+        element.textContent = "";
+        const span = document.createElement("span");
+        span.className = "loading";
+        span.textContent = loadingText;
+        element.appendChild(span);
+        element.disabled = true;
+      }
+      element[key]++;
     } else {
-      element.textContent = element.dataset.originalText || "";
-      element.disabled = false;
+      element[key] = Math.max(0, element[key] - 1);
+      if (element[key] === 0) {
+        element.textContent = element.dataset.originalText || "";
+        element.disabled = false;
+      }
     }
   },
 

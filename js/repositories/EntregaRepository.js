@@ -39,11 +39,12 @@ export const EntregaRepository = {
     return db.collection(COLECOES.ENTREGAS).doc(id).delete();
   },
 
-  async listAll() {
+  async listAll(limit = 100) {
     const db = getDb();
     const snap = await db
       .collection(COLECOES.ENTREGAS)
       .orderBy("criadoEm", "desc")
+      .limit(limit)
       .get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   },

@@ -1,6 +1,7 @@
 import { getFirebase } from "../firebase.js";
 
 let autenticado = false;
+let authUnsubscribe = null;
 
 export const AuthService = {
   async init() {
@@ -8,22 +9,23 @@ export const AuthService = {
 
     getFirebase();
 
+    if (authUnsubscribe) {
+      authUnsubscribe();
+    }
+
     await new Promise((resolve, reject) => {
-      const unsubscribe = firebase.auth().onAuthStateChanged(
+      authUnsubscribe = firebase.auth().onAuthStateChanged(
         (user) => {
+          autenticado = !!user;
           if (user) {
-            autenticado = true;
-            unsubscribe();
             resolve();
           } else {
             firebase.auth().signInAnonymously().catch((err) => {
-              unsubscribe();
               reject(err);
             });
           }
         },
         (err) => {
-          unsubscribe();
           reject(err);
         },
       );
@@ -32,5 +34,13 @@ export const AuthService = {
 
   isAutenticado() {
     return autenticado;
+  },
+
+  destroy() {
+    if (authUnsubscribe) {
+      authUnsubscribe();
+      authUnsubscribe = null;
+    }
+    autenticado = false;
   },
 };
