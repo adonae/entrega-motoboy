@@ -29,6 +29,7 @@ export const Format = {
   statusLabel(status) {
     const labels = {
       pendente: "Pendente",
+      saiu_loja: "Saiu da loja",
       em_rota: "Em rota",
       entregue: "Entregue",
     };
@@ -36,7 +37,7 @@ export const Format = {
   },
 
   statusClass(status) {
-    return ["pendente", "em_rota", "entregue"].includes(status)
+    return ["pendente", "saiu_loja", "em_rota", "entregue"].includes(status)
       ? `status-${status}`
       : "status-pendente";
   },

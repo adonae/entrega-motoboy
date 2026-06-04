@@ -1,8 +1,11 @@
 import { AuthService } from "../services/AuthService.js";
+import { LoteService } from "../services/LoteService.js";
 import { initCepController } from "./CepController.js";
 import { initEntregaForm } from "./EntregaForm.js";
 import { initEntregaList } from "./EntregaList.js";
+import { Dom } from "../utils/dom.js";
 import { handleError } from "../utils/errorHandler.js";
+import { MENSAGENS } from "../utils/constants.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -51,6 +54,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   list.setOnLimpar(form.limparFormulario);
 
   initCepController(state);
+
+  const btnCriarLote = document.getElementById("btn-criar-lote");
+
+  list.setOnLoteChanged((hasPendentes) => {
+    if (hasPendentes) {
+      btnCriarLote.classList.remove("hidden");
+    } else {
+      btnCriarLote.classList.add("hidden");
+    }
+  });
+
+  btnCriarLote.addEventListener("click", async () => {
+    const pendentes = state.entregasCarregadas.filter(
+      (e) => e.status === "pendente" && !e.loteId,
+    );
+
+    if (!pendentes.length) {
+      Dom.showToast(MENSAGENS.SEM_ENTREGAS_PENDENTES, "error");
+      return;
+    }
+
+    Dom.setLoading(btnCriarLote, true, "Criando lote...");
+    try {
+      const docRef = await LoteService.criar(pendentes.map((e) => e.id));
+      const linkLote = `${window.location.origin}/lote.html?id=${docRef.id}`;
+      Dom.showToast(MENSAGENS.LOTE_CRIADO, "success");
+      Dom.showLinkCriado(linkLote);
+      btnCriarLote.classList.add("hidden");
+      list.carregarEntregas();
+    } catch (err) {
+      handleError(err, "Criar lote", MENSAGENS.ERRO_SALVAR);
+    } finally {
+      Dom.setLoading(btnCriarLote, false);
+    }
+  });
 
   list.carregarEntregas();
 });

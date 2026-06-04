@@ -177,6 +177,10 @@ h3 {
   background: #dbeafe;
   color: #1e40af;
 }
+.status-saiu_loja {
+  background: #ffedd5;
+  color: #9a3412;
+}
 
 .loading {
   color: var(--text-muted);

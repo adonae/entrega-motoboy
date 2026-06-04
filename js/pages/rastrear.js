@@ -2,16 +2,10 @@ import { EntregaService } from "../services/EntregaService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 import { handleError } from "../utils/errorHandler.js";
-import { MENSAGENS } from "../utils/constants.js";
+import { MENSAGENS, TIMELINE, STATUS_STEP_INDEX } from "../utils/constants.js";
 
-const TIMELINE_STEPS = [
-  { label: "Pedido criado", status: "pendente" },
-  { label: "Saiu da loja", status: "em_rota" },
-  { label: "Em rota", status: "em_rota" },
-  { label: "Entregue", status: "entregue" },
-];
-
-const STATUS_STEP_INDEX = { pendente: 0, em_rota: 2, entregue: 3 };
+const TIMELINE_STEPS = TIMELINE;
+const STATUS_STEP_INDEX = STATUS_STEP_INDEX;
 
 document.addEventListener("DOMContentLoaded", () => {
   const btnBuscar = document.getElementById("btn-buscar");

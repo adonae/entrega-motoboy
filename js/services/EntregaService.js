@@ -112,6 +112,18 @@ export const EntregaService = {
     });
   },
 
+  async atualizarStatus(id, novoStatus, extraData = {}) {
+    if (!id) throw new Error(MENSAGENS.ID_INVALIDO);
+    const timestamps = {
+      [STATUS.EM_ROTA]: { emRotaEm: serverTimestamp() },
+      [STATUS.ENTREGUE]: { entregueEm: serverTimestamp() },
+    };
+    return EntregaRepository.updateStatus(id, novoStatus, {
+      ...(timestamps[novoStatus] ?? {}),
+      ...extraData,
+    });
+  },
+
   contarPorStatus(entregas) {
     return entregas.reduce(
       (acc, e) => {

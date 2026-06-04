@@ -1,56 +1,79 @@
 # Sistema de Rastreamento de Entregas
 
-Aplicacao estatica para cadastrar entregas, calcular uma rota simples, rastrear status e confirmar entregas usando Firebase Hosting e Cloud Firestore.
+Aplicacao estatica para cadastrar entregas, gerenciar lotes, calcular rota, rastrear status em tempo real e confirmar entregas usando Firebase Hosting e Cloud Firestore.
 
-## Arquivos principais
+## Paginas
 
-| Arquivo | Quem usa | Para que serve |
+| Pagina | Quem usa | Para que serve |
 |---|---|---|
-| `index.html` | Empresa | Painel para cadastrar e visualizar entregas |
-| `rota.html` | Empresa/motoboy | Calcula uma ordem sugerida para entregas pendentes |
-| `entrega.html` | Motoboy | Confirma uma entrega pelo ID |
-| `rastrear.html` | Cliente | Acompanha o status de uma entrega |
+| `index.html` | Loja (operador) | Painel para cadastrar entregas e criar lotes |
+| `lote.html` | Loja / Motoboy | Gerenciar um lote: "Saiu da Loja", "Em Rota" e "Entregue" por entrega |
+| `rota.html` | Motoboy | Calcula ordem sugerida para entregas pendentes |
+| `entrega.html` | Loja / Motoboy | Visualizar detalhes e confirmar entrega individual |
+| `rastrear.html` | Cliente | Acompanha status da entrega em tempo real |
+
+## Fluxo de status
+
+Cada entrega percorre 4 etapas distintas:
+
+```
+Pendente → Saiu da Loja → Em Rota → Entregue
+```
+
+1. **Pendente** — criada no painel, aguardando alocacao em lote
+2. **Saiu da Loja** — lote despachado (batch-level, todas as entregas do lote)
+3. **Em Rota** — motoboy iniciou deslocamento para aquela entrega (individual)
+4. **Entregue** — confirmada pelo motoboy (individual)
+
+A timeline de rastreamento do cliente reflete exatamente essas 4 etapas.
 
 ## Estrutura do codigo
 
 ```
 js/
 ├── pages/
-│   ├── index.js          # Orquestrador das paginas de cadastro
-│   ├── CepController.js  # Consulta de CEP (ViaCEP, AbortController)
-│   ├── EntregaForm.js    # Formulario: criar/editar/limpar
-│   ├── EntregaList.js    # Lista: renderizar, excluir, contadores
-│   ├── entrega.js        # Pagina de confirmacao de entrega
-│   ├── rota.js           # Pagina de calculo de rota
-│   └── rastrear.js       # Pagina de acompanhamento
+│   ├── index.js           # Orquestrador do painel (criar/lotar)
+│   ├── CepController.js   # Consulta de CEP (ViaCEP, AbortController)
+│   ├── EntregaForm.js     # Formulario: criar/editar/limpar
+│   ├── EntregaList.js     # Lista: renderizar, excluir, contadores, controle de lote
+│   ├── entrega.js         # Pagina de confirmacao individual
+│   ├── lote.js            # Pagina do lote (status batch + individual)
+│   ├── rota.js            # Pagina de calculo de rota
+│   └── rastrear.js        # Pagina de acompanhamento do cliente
 ├── services/
-│   ├── GeocodingService.js   # Geocodificacao (Photon, Nominatim, cache)
-│   ├── RoutingAlgorithm.js   # Haversine, TSP Nearest Neighbor (sem rede)
-│   ├── RotaService.js        # Orquestracao de rota (geocode + TSP)
-│   ├── EntregaService.js     # Regras de negocio das entregas
-│   └── ViaCepService.js      # Consulta de CEP via ViaCEP
+│   ├── AuthService.js         # Autenticacao anonima Firebase
+│   ├── GeocodingService.js    # Geocodificacao (Photon, Nominatim, cache LRU)
+│   ├── RoutingAlgorithm.js    # Haversine, TSP Nearest Neighbor (puro, sem rede)
+│   ├── RotaService.js         # Orquestracao de rota (geocode + TSP)
+│   ├── EntregaService.js      # Regras de negocio das entregas
+│   ├── LoteService.js         # Regras de negocio dos lotes (batch atomico)
+│   └── ViaCepService.js       # Consulta de CEP via ViaCEP
 ├── repositories/
-│   └── EntregaRepository.js  # Acesso ao Firestore
+│   ├── EntregaRepository.js   # Acesso ao Firestore (entregas)
+│   └── LoteRepository.js      # Acesso ao Firestore (lotes)
 └── utils/
-    ├── dom.js             # Helpers de DOM (toast, loading, escape)
-    ├── format.js          # Formatacao (CEP, telefone, data, status)
-    ├── constants.js       # Strings e valores fixos
-    └── errorHandler.js    # Tratamento centralizado de erros
+    ├── dom.js              # Helpers de DOM (toast, loading, escape, contador aninhado)
+    ├── format.js           # Formatacao (CEP, telefone, data, status)
+    ├── constants.js        # Strings e valores fixos (STATUS, TIMELINE, COLECOES)
+    └── errorHandler.js     # Tratamento centralizado de erros
 ```
 
-Cada modulo em `pages/` exporta uma funcao `init*` que recebe um objeto `state`
-compartilhado, mantendo o `index.js` como orquestrador enxuto (~40 linhas).
+### Arquitetura em camadas
 
-`RoutingAlgorithm.js` nao possui dependencia de rede nem de DOM — pode ser
-testado isoladamente com entradas de coordenadas fixas.
+`pages/` → `services/` → `repositories/` → `firebase.js` (SDK init)
 
-`GeocodingService.js` e `RoutingAlgorithm.js` substituiram o antigo `routing.js`,
-que ainda existe como barrel de compatibilidade.
+Cada modulo em `pages/` exporta uma funcao `init*` que recebe um objeto `state` compartilhado, mantendo o `index.js` como orquestrador enxuto.
+
+`RoutingAlgorithm.js` nao possui dependencia de rede nem de DOM — pode ser testado isoladamente com entradas de coordenadas fixas.
+
+### Lotes (batch)
+
+A operacao "Saiu da Loja" usa `WriteBatch` do Firestore para atualizar atomicamente o documento do lote e todas as entregas vinculadas em uma unica requisicao.
 
 ## Configuracao
 
 1. Crie um projeto no Firebase.
-2. Ative o Cloud Firestore.
+2. Ative o Cloud Firestore e o Authentication (anonimo).
 3. Registre um app Web no Firebase.
 4. Copie `js/config.example.js` para `js/config.js`.
 5. Preencha `firebaseConfig` em `js/config.js` com os dados do seu app Web.
@@ -81,7 +104,8 @@ npx -y firebase-tools@latest deploy --only hosting
 
 As regras do Firestore estao definidas em `firestore.rules`:
 
-- **Leitura**: publica (`allow read: if true`) — o cliente consegue rastrear sem autenticacao.
+- **Leitura por ID** (`get`): publica — cliente consegue rastrear sem autenticacao.
+- **Listagem** (`list`): restrita a usuarios autenticados.
 - **Escrita**: restrita a usuarios autenticados (`allow write: if request.auth != null`).
 
 Aplique com:

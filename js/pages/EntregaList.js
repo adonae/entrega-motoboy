@@ -1,7 +1,9 @@
 import { EntregaService } from "../services/EntregaService.js";
+import { LoteService } from "../services/LoteService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 import { handleError } from "../utils/errorHandler.js";
+import { MENSAGENS } from "../utils/constants.js";
 
 export function initEntregaList(state) {
   let onEditar = null;
@@ -79,6 +81,13 @@ export function initEntregaList(state) {
       }
 
       state.listaEntregas.innerHTML = "";
+
+      const pendentesIds = entregas
+        .filter((e) => e.status === "pendente" && !e.loteId)
+        .map((e) => e.id);
+
+      state.hasPendentesSemLote = pendentesIds.length > 0;
+
       entregas.forEach((entrega) => {
         const nome = Dom.escapeHtml(entrega.nome);
         const endereco = Dom.escapeHtml(entrega.endereco);
@@ -104,6 +113,7 @@ export function initEntregaList(state) {
       });
 
       atualizarContadores(entregas);
+      if (state.onLoteChanged) state.onLoteChanged(state.hasPendentesSemLote);
     } catch (err) {
       handleError(err, "Carregar entregas", "Erro ao carregar.");
       state.listaEntregas.innerHTML = `<li class="text-muted">Erro ao carregar.</li>`;
@@ -135,5 +145,6 @@ export function initEntregaList(state) {
     carregarEntregas,
     setOnEditar(fn) { onEditar = fn; },
     setOnLimpar(fn) { onLimpar = fn; },
+    setOnLoteChanged(fn) { state.onLoteChanged = fn; },
   };
 }

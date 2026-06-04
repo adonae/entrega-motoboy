@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lote de Entregas</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="flex justify-between items-center" style="margin-bottom: 2rem">
+        <div>
+          <h1>Lote de Entregas</h1>
+          <p class="text-muted" id="lote-info">Carregando lote...</p>
+        </div>
+        <nav class="flex">
+          <a href="index.html" class="btn btn-secondary">Painel</a>
+          <a href="rota.html" class="btn btn-secondary">Rota</a>
+        </nav>
+      </header>
+
+      <div class="card" id="card-lote">
+        <div class="flex justify-between items-center">
+          <h2>Acoes do lote</h2>
+          <button type="button" id="btn-sair-loja" class="btn btn-warning hidden">
+            Saiu da Loja
+          </button>
+        </div>
+        <p id="status-lote" class="text-muted mt-1"></p>
+      </div>
+
+      <div class="card">
+        <h2>Entregas do lote</h2>
+        <ul id="lista-entregas-lote" class="list-clean">
+          <li class="loading">Carregando entregas...</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script type="module" src="js/pages/lote.js"></script>
+  </body>
+</html>
