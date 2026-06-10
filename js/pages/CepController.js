@@ -4,6 +4,7 @@ import { Format } from "../utils/format.js";
 
 export function initCepController(state) {
   let cepController = null;
+  let cepTimeout = null;
 
   async function consultarCep(cep) {
     if (cepController) cepController.abort();
@@ -41,8 +42,15 @@ export function initCepController(state) {
     state.cepStatus.textContent = "";
     state.cepStatus.className = "field-hint";
     const cepLimpo = ViaCepService.normalizarCep(e.target.value);
-    if (cepLimpo.length === 8 && cepLimpo !== state.ultimoCepConsultado) {
-      consultarCep(cepLimpo);
+    if (cepLimpo.length === 8) {
+      clearTimeout(cepTimeout);
+      cepTimeout = setTimeout(() => {
+        if (cepLimpo !== state.ultimoCepConsultado) {
+          consultarCep(cepLimpo);
+        }
+      }, 300);
+    } else {
+      clearTimeout(cepTimeout);
     }
   });
 

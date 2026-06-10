@@ -1,8 +1,6 @@
 import { GeocodingService } from "./GeocodingService.js";
 import { RoutingAlgorithm } from "./RoutingAlgorithm.js";
 
-const RATE_LIMIT_MS = 1100; // Nominatim: 1 req/seg
-
 export const RotaService = {
   async calcular(enderecoOrigem, entregas, origemCoordsFixo = null) {
     if (!entregas.length) {
@@ -19,10 +17,6 @@ export const RotaService = {
       const coords = await GeocodingService.geocodeEntrega(entregas[i]);
       if (coords) {
         entregasComCoords.push({ ...entregas[i], coords });
-      }
-
-      if (i < entregas.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_MS));
       }
     }
 

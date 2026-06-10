@@ -1,5 +1,7 @@
 const cache = new Map();
 const CACHE_MAX = 200;
+const NOMINATIM_RATE_LIMIT_MS = 1100;
+let ultimaChamadaNominatim = 0;
 
 function cacheSet(key, value) {
   if (cache.size >= CACHE_MAX) {
@@ -38,6 +40,13 @@ async function geocodePhoton(address) {
 }
 
 async function geocodeNominatim(address) {
+  const agora = Date.now();
+  const diferenca = agora - ultimaChamadaNominatim;
+  if (diferenca < NOMINATIM_RATE_LIMIT_MS) {
+    await new Promise((resolve) => setTimeout(resolve, NOMINATIM_RATE_LIMIT_MS - diferenca));
+  }
+  ultimaChamadaNominatim = Date.now();
+
   try {
     const query = encodeURIComponent(
       address.includes("Brasil") ? address : `${address}, Brasil`,

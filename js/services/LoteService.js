@@ -44,10 +44,7 @@ export const LoteService = {
   },
 
   async carregarEntregasDoLote(lote) {
-    if (!lote?.entregaIds?.length) return [];
-    const entregas = await Promise.all(
-      lote.entregaIds.map((id) => EntregaRepository.getById(id)),
-    );
-    return entregas.filter(Boolean);
+    if (!lote?.id) return [];
+    return EntregaRepository.listByLoteId(lote.id);
   },
 };

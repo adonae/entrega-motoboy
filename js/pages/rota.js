@@ -1,10 +1,19 @@
+import { AuthService } from "../services/AuthService.js";
 import { EntregaService } from "../services/EntregaService.js";
 import { RotaService } from "../services/RotaService.js";
 import { Dom } from "../utils/dom.js";
 import { handleError } from "../utils/errorHandler.js";
 import { LOJA } from "../utils/constants.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await AuthService.init();
+  } catch (err) {
+    handleError(err, "Autenticacao");
+    document.getElementById("card-rota-otimizada").innerHTML =
+      `<p class="text-muted">Erro de autenticacao. Verifique o Firebase Console.</p>`;
+    return;
+  }
   const btnCalcular = document.getElementById("btn-calcular-rota");
   const listaRota = document.getElementById("lista-rota");
   const cardOtimizada = document.getElementById("card-rota-otimizada");

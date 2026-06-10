@@ -27,9 +27,26 @@ export const EntregaService = {
       .join(" - ");
   },
 
+  validarTelefone(telefone) {
+    const digits = String(telefone ?? "").replace(/\D/g, "");
+    if (digits.length < 10 || digits.length > 11) return false;
+    return true;
+  },
+
+  validarCep(cep) {
+    const digits = String(cep ?? "").replace(/\D/g, "");
+    return digits.length === 8;
+  },
+
   async criar({ nome, telefone, observacoes, enderecoDetalhes }) {
     if (!nome || !telefone || !enderecoDetalhes) {
       throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
+    }
+    if (!this.validarTelefone(telefone)) {
+      throw new Error("Telefone invalido. Informe DDD + numero (10 ou 11 digitos).");
+    }
+    if (enderecoDetalhes.cep && !this.validarCep(enderecoDetalhes.cep)) {
+      throw new Error("CEP invalido. Informe 8 digitos.");
     }
     const endereco = this.montarEndereco(enderecoDetalhes);
     if (!endereco) {
@@ -51,6 +68,12 @@ export const EntregaService = {
     }
     if (!nome || !telefone || !enderecoDetalhes) {
       throw new Error(MENSAGENS.CAMPOS_OBRIGATORIOS);
+    }
+    if (!this.validarTelefone(telefone)) {
+      throw new Error("Telefone invalido. Informe DDD + numero (10 ou 11 digitos).");
+    }
+    if (enderecoDetalhes.cep && !this.validarCep(enderecoDetalhes.cep)) {
+      throw new Error("CEP invalido. Informe 8 digitos.");
     }
     const endereco = this.montarEndereco(enderecoDetalhes);
     if (!endereco) {
@@ -129,11 +152,12 @@ export const EntregaService = {
       (acc, e) => {
         acc.total++;
         if (e.status === STATUS.PENDENTE) acc.pendente++;
+        else if (e.status === STATUS.SAIU_LOJA) acc.saiu_loja++;
         else if (e.status === STATUS.EM_ROTA) acc.em_rota++;
         else if (e.status === STATUS.ENTREGUE) acc.entregue++;
         return acc;
       },
-      { total: 0, pendente: 0, em_rota: 0, entregue: 0 },
+      { total: 0, pendente: 0, saiu_loja: 0, em_rota: 0, entregue: 0 },
     );
   },
 };

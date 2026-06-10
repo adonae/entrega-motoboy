@@ -13,6 +13,7 @@ export function initEntregaList(state) {
     const contagem = EntregaService.contarPorStatus(entregas);
     document.getElementById("stat-total").textContent = contagem.total;
     document.getElementById("stat-pending").textContent = contagem.pendente;
+    document.getElementById("stat-loja").textContent = contagem.saiu_loja;
     document.getElementById("stat-route").textContent = contagem.em_rota;
     document.getElementById("stat-delivered").textContent = contagem.entregue;
   }
@@ -102,8 +103,8 @@ export function initEntregaList(state) {
             <span class="status-badge ${statusClass}">${statusLabel}</span>
           </div>
           <div class="delivery-actions">
-            ${entrega.status === "pendente" ? `<button type="button" class="btn btn-primary btn-sm" data-sair-id="${id}">Sair p/ entrega</button>` : ""}
-            <button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>
+            ${entrega.status === "pendente" && !entrega.loteId ? `<button type="button" class="btn btn-primary btn-sm" data-sair-id="${id}">Sair p/ entrega</button>` : ""}
+            ${entrega.status !== "entregue" ? `<button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>` : ""}
             <button type="button" class="btn btn-danger btn-sm" data-excluir-id="${id}">Excluir</button>
             <a href="entrega.html?id=${id}" class="btn btn-secondary btn-sm">Abrir</a>
             <a href="rastrear.html?id=${id}" target="_blank" class="btn btn-secondary btn-sm">Link cliente</a>

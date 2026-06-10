@@ -49,11 +49,22 @@ export const EntregaRepository = {
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   },
 
-  async listByStatus(status) {
+  async listByStatus(status, limit = 100) {
     const db = getDb();
     const snap = await db
       .collection(COLECOES.ENTREGAS)
       .where("status", "==", status)
+      .orderBy("criadoEm", "desc")
+      .limit(limit)
+      .get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  },
+
+  async listByLoteId(loteId) {
+    const db = getDb();
+    const snap = await db
+      .collection(COLECOES.ENTREGAS)
+      .where("loteId", "==", loteId)
       .get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   },
