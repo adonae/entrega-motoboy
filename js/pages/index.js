@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     entregaEmEdicao: null,
     entregasCarregadas: [],
     edicaoInicialCarregada: false,
+    criandoLote: false,
   };
 
   if (!state.form) return;
@@ -66,12 +67,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   btnCriarLote.addEventListener("click", async () => {
+    if (state.criandoLote) return;
+    state.criandoLote = true;
+
     const pendentes = state.entregasCarregadas.filter(
       (e) => e.status === "pendente" && !e.loteId,
     );
 
     if (!pendentes.length) {
       Dom.showToast(MENSAGENS.SEM_ENTREGAS_PENDENTES, "error");
+      state.criandoLote = false;
       return;
     }
 
@@ -87,6 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       handleError(err, "Criar lote", MENSAGENS.ERRO_SALVAR);
     } finally {
       Dom.setLoading(btnCriarLote, false);
+      state.criandoLote = false;
     }
   });
 
