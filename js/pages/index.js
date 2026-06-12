@@ -83,11 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     Dom.setLoading(btnCriarLote, true, "Criando lote...");
     try {
       const docRef = await LoteService.criar(pendentes.map((e) => e.id));
-      const linkLote = `${window.location.origin}/lote.html?id=${docRef.id}`;
-      Dom.showToast(MENSAGENS.LOTE_CRIADO, "success");
-      Dom.showLinkCriado(linkLote);
-      btnCriarLote.classList.add("hidden");
-      list.carregarEntregas();
+      window.location.href = `/lote.html?id=${docRef.id}`;
     } catch (err) {
       handleError(err, "Criar lote", MENSAGENS.ERRO_SALVAR);
     } finally {
