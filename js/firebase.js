@@ -38,3 +38,7 @@ export function getDb() {
 export function serverTimestamp() {
   return firebase.firestore.FieldValue.serverTimestamp();
 }
+
+export function deleteField() {
+  return firebase.firestore.FieldValue.delete();
+}

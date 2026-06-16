@@ -48,7 +48,7 @@ service cloud.firestore {
           || (resource.data.saiuEm == null && request.resource.data.saiuEm != null)
         );
 
-      allow delete: if false;
+      allow delete: if request.auth != null;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { getDb, serverTimestamp } from "../firebase.js";
+import { getDb, serverTimestamp, deleteField } from "../firebase.js";
 import { LoteRepository } from "../repositories/LoteRepository.js";
 import { EntregaRepository } from "../repositories/EntregaRepository.js";
 import { STATUS, COLECOES, MENSAGENS } from "../utils/constants.js";
@@ -62,5 +62,29 @@ export const LoteService = {
   async carregarEntregasDoLote(lote) {
     if (!lote?.id) return [];
     return EntregaRepository.listByLoteId(lote.id);
+  },
+
+  async excluir(loteId) {
+    const db = getDb();
+    await db.collection(COLECOES.LOTES).doc(loteId).delete();
+  },
+
+  async liberarPedidos(loteId) {
+    const db = getDb();
+    const loteRef = db.collection(COLECOES.LOTES).doc(loteId);
+
+    await db.runTransaction(async (transaction) => {
+      const loteSnap = await transaction.get(loteRef);
+      if (!loteSnap.exists) return;
+
+      const lote = { id: loteSnap.id, ...loteSnap.data() };
+      for (const entregaId of lote.entregaIds ?? []) {
+        const ref = db.collection(COLECOES.ENTREGAS).doc(entregaId);
+        transaction.update(ref, {
+          loteId: deleteField(),
+          status: STATUS.PENDENTE,
+        });
+      }
+    });
   },
 };

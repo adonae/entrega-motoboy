@@ -24,6 +24,17 @@
         </ul>
       </div>
     </div>
+
+    <div id="modal-excluir" class="modal-overlay hidden">
+      <div class="modal">
+        <p id="modal-mensagem" style="margin-bottom: 1rem; font-weight: 500;"></p>
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+          <button id="btn-modal-excluir" class="btn btn-danger">Excluir lote</button>
+          <button id="btn-modal-liberar" class="btn btn-warning">Voltar pedidos ao painel</button>
+          <button id="btn-modal-cancelar" class="btn btn-secondary">Cancelar</button>
+        </div>
+      </div>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
