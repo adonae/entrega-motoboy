@@ -18,13 +18,6 @@ export const LoteRepository = {
     return { id: doc.id, ...doc.data() };
   },
 
-  async marcarSaida(id) {
-    const db = getDb();
-    await db.collection(COLECOES.LOTES).doc(id).update({
-      saiuEm: serverTimestamp(),
-    });
-  },
-
   async listAll() {
     const db = getDb();
     const snap = await db

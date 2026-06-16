@@ -8,7 +8,21 @@ export const LoteService = {
     if (!entregaIds?.length) {
       throw new Error(MENSAGENS.SEM_ENTREGAS_PENDENTES);
     }
-    return LoteRepository.add(entregaIds);
+    const db = getDb();
+    const loteRef = await db.collection(COLECOES.LOTES).add({
+      entregaIds,
+      criadoEm: serverTimestamp(),
+      saiuEm: null,
+    });
+
+    const batch = db.batch();
+    for (const entregaId of entregaIds) {
+      const ref = db.collection(COLECOES.ENTREGAS).doc(entregaId);
+      batch.update(ref, { loteId: loteRef.id });
+    }
+    await batch.commit();
+
+    return loteRef;
   },
 
   async buscarPorId(id) {
