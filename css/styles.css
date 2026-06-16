@@ -240,6 +240,19 @@ a:hover {
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 
+.btn-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+.btn-voltar:hover { text-decoration: underline; }
+
 @keyframes toast-in {
   from { transform: translateY(1rem); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }

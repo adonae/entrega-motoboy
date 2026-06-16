@@ -4,6 +4,10 @@ import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 import { handleError } from "../utils/errorHandler.js";
 
+const params = new URLSearchParams(window.location.search);
+const entregaId = params.get("id");
+const modoMotoboy = params.has("modo");
+
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     await AuthService.init();
@@ -16,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const entregaId = new URLSearchParams(window.location.search).get("id");
   const cardEntrega = document.getElementById("card-entrega");
   const cardConfirmacao = document.getElementById("card-confirmacao");
   const detalhesEl = document.getElementById("detalhes-entrega");
@@ -35,20 +38,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnEditar.href = `index.html?editar=${encodeURIComponent(entregaId)}`;
 
+  if (modoMotoboy) {
+    btnEditar.classList.add("hidden");
+    btnExcluir.classList.add("hidden");
+    document.getElementById("nav-entrega")?.classList.add("hidden");
+    document.getElementById("btn-voltar-entrega")?.classList.remove("hidden");
+  }
+
   function renderizar(entrega) {
     entregaAtual = entrega;
     cardEntrega.classList.add("hidden");
     cardConfirmacao.classList.remove("hidden");
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(entrega.endereco || "")}`;
     detalhesEl.innerHTML = `
       <p><strong>Cliente:</strong> ${Dom.escapeHtml(entrega.nome)}</p>
-      <p><strong>Endereco:</strong> ${Dom.escapeHtml(entrega.endereco)}</p>
+      <p><strong>Endereco:</strong> ${Dom.escapeHtml(entrega.endereco)}
+        <a href="${mapsUrl}" target="_blank" class="btn btn-primary btn-sm" style="margin-left:0.5rem;">Ver no Maps</a>
+      </p>
       <p><strong>Telefone:</strong> ${Dom.escapeHtml(Format.phone(entrega.telefone))}</p>
       <p><strong>Status:</strong>
         <span class="status-badge ${Format.statusClass(entrega.status)}">${Dom.escapeHtml(Format.statusLabel(entrega.status))}</span>
       </p>
     `;
 
-    if (entrega.status === "pendente") {
+    if (entrega.status === "pendente" && !modoMotoboy) {
       btnSair.classList.remove("hidden");
     } else {
       btnSair.classList.add("hidden");
