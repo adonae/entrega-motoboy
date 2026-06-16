@@ -1,7 +1,5 @@
 import { EntregaService } from "../services/EntregaService.js";
-import { LoteService } from "../services/LoteService.js";
 import { Dom } from "../utils/dom.js";
-import { Format } from "../utils/format.js";
 import { handleError } from "../utils/errorHandler.js";
 import { MENSAGENS } from "../utils/constants.js";
 
@@ -10,12 +8,7 @@ export function initEntregaList(state) {
   let onLimpar = null;
 
   function atualizarContadores(entregas) {
-    const contagem = EntregaService.contarPorStatus(entregas);
-    document.getElementById("stat-total").textContent = contagem.total;
-    document.getElementById("stat-pending").textContent = contagem.pendente;
-    document.getElementById("stat-loja").textContent = contagem.saiu_loja;
-    document.getElementById("stat-route").textContent = contagem.em_rota;
-    document.getElementById("stat-delivered").textContent = contagem.entregue;
+    document.getElementById("stat-disponiveis").textContent = entregas.length;
   }
 
   async function sairParaEntrega(id, button) {
@@ -59,15 +52,21 @@ export function initEntregaList(state) {
     }
   }
 
+  function isDisponivel(entrega) {
+    return entrega.status === "pendente" && !entrega.loteId;
+  }
+
   async function carregarEntregas() {
     state.listaEntregas.innerHTML = `<li class="loading">Carregando...</li>`;
     try {
       const entregas = await EntregaService.listarTodas();
       state.entregasCarregadas = entregas;
+      const disponiveis = entregas.filter(isDisponivel);
 
-      if (!entregas.length) {
-        state.listaEntregas.innerHTML = `<li class="text-muted">Nenhuma entrega registrada.</li>`;
+      if (!disponiveis.length && !state.entregaParaEditar) {
+        state.listaEntregas.innerHTML = `<li class="text-muted">Nenhuma entrega disponivel para lote.</li>`;
         atualizarContadores([]);
+        if (state.store) state.store.set("hasPendentesSemLote", false);
         return;
       }
 
@@ -83,37 +82,31 @@ export function initEntregaList(state) {
 
       state.listaEntregas.innerHTML = "";
 
-      const pendentesIds = entregas
-        .filter((e) => e.status === "pendente" && !e.loteId)
-        .map((e) => e.id);
+      if (state.store) state.store.set("hasPendentesSemLote", disponiveis.length > 0);
 
-      if (state.store) state.store.set("hasPendentesSemLote", pendentesIds.length > 0);
-
-      entregas.forEach((entrega) => {
+      disponiveis.forEach((entrega) => {
         const nome = Dom.escapeHtml(entrega.nome);
         const endereco = Dom.escapeHtml(entrega.endereco);
-        const statusLabel = Dom.escapeHtml(Format.statusLabel(entrega.status));
-        const statusClass = Format.statusClass(entrega.status);
         const id = encodeURIComponent(entrega.id);
         const li = document.createElement("li");
         li.className = "flex justify-between items-center mt-1";
         li.innerHTML = `
           <div>
             <strong>${nome}</strong> - <span class="text-muted">${endereco}</span><br>
-            <span class="status-badge ${statusClass}">${statusLabel}</span>
+            <span class="status-badge status-pendente">Pendente</span>
           </div>
           <div class="delivery-actions">
-            ${entrega.status === "pendente" && !entrega.loteId ? `<button type="button" class="btn btn-primary btn-sm" data-sair-id="${id}">Sair p/ entrega</button>` : ""}
-            ${entrega.status !== "entregue" ? `<button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>` : ""}
+            <button type="button" class="btn btn-primary btn-sm" data-sair-id="${id}">Sair p/ entrega</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-editar-id="${id}">Editar</button>
             <button type="button" class="btn btn-danger btn-sm" data-excluir-id="${id}">Excluir</button>
             <a href="entrega.html?id=${id}" class="btn btn-secondary btn-sm">Abrir</a>
-            <a href="rastrear.html?id=${id}" target="_blank" class="btn btn-secondary btn-sm">Link cliente</a>
+            <a href="rastrear.html?id=${id}" target="_blank" class="btn btn-secondary btn-sm">Link</a>
           </div>
         `;
         state.listaEntregas.appendChild(li);
       });
 
-      atualizarContadores(entregas);
+      atualizarContadores(disponiveis);
     } catch (err) {
       handleError(err, "Carregar entregas", "Erro ao carregar.");
       state.listaEntregas.innerHTML = `<li class="text-muted">Erro ao carregar.</li>`;

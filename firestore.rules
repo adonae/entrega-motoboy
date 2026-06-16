@@ -23,17 +23,8 @@ service cloud.firestore {
         && request.resource.data.criadoEm == request.time;
 
       allow update: if request.auth != null
-        && request.resource.data.nome is string
-        && request.resource.data.nome.size() > 0
-        && request.resource.data.nome.size() <= 200
-        && request.resource.data.telefone is string
-        && request.resource.data.telefone.size() >= 10
-        && request.resource.data.telefone.size() <= 15
-        && request.resource.data.endereco is string
-        && request.resource.data.endereco.size() > 0
-        && request.resource.data.endereco.size() <= 500
-        && request.resource.data.status in ['pendente', 'saiu_loja', 'em_rota', 'entregue']
-        && request.resource.data.criadoEm == resource.data.criadoEm;
+        && request.resource.data.criadoEm == resource.data.criadoEm
+        && request.resource.data.status in ['pendente', 'saiu_loja', 'em_rota', 'entregue'];
 
       allow delete: if request.auth != null;
     }
@@ -52,7 +43,10 @@ service cloud.firestore {
       allow update: if request.auth != null
         && request.resource.data.entregaIds == resource.data.entregaIds
         && request.resource.data.criadoEm == resource.data.criadoEm
-        && request.resource.data.saiuEm == resource.data.saiuEm;
+        && (
+          request.resource.data.saiuEm == resource.data.saiuEm
+          || (resource.data.saiuEm == null && request.resource.data.saiuEm != null)
+        );
 
       allow delete: if false;
     }
