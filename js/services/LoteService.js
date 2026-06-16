@@ -22,25 +22,27 @@ export const LoteService = {
   },
 
   async sairLoja(loteId) {
-    const lote = await LoteRepository.getById(loteId);
-    if (!lote) throw new Error(MENSAGENS.LOTE_NAO_ENCONTRADO);
-    if (lote.saiuEm) return;
-
     const db = getDb();
-    const batch = db.batch();
-
     const loteRef = db.collection(COLECOES.LOTES).doc(loteId);
-    batch.update(loteRef, { saiuEm: serverTimestamp() });
 
-    for (const entregaId of lote.entregaIds) {
-      const ref = db.collection(COLECOES.ENTREGAS).doc(entregaId);
-      batch.update(ref, {
-        status: STATUS.SAIU_LOJA,
-        loteId,
-      });
-    }
+    await db.runTransaction(async (transaction) => {
+      const loteSnap = await transaction.get(loteRef);
+      if (!loteSnap.exists) {
+        throw new Error(MENSAGENS.LOTE_NAO_ENCONTRADO);
+      }
+      const lote = { id: loteSnap.id, ...loteSnap.data() };
+      if (lote.saiuEm) return;
 
-    await batch.commit();
+      transaction.update(loteRef, { saiuEm: serverTimestamp() });
+
+      for (const entregaId of lote.entregaIds) {
+        const ref = db.collection(COLECOES.ENTREGAS).doc(entregaId);
+        transaction.update(ref, {
+          status: STATUS.SAIU_LOJA,
+          loteId,
+        });
+      }
+    });
   },
 
   async carregarEntregasDoLote(lote) {

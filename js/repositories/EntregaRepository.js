@@ -60,11 +60,12 @@ export const EntregaRepository = {
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   },
 
-  async listByLoteId(loteId) {
+  async listByLoteId(loteId, limit = 200) {
     const db = getDb();
     const snap = await db
       .collection(COLECOES.ENTREGAS)
       .where("loteId", "==", loteId)
+      .limit(limit)
       .get();
     return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   },

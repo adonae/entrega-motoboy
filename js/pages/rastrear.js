@@ -1,13 +1,19 @@
+import { AuthService } from "../services/AuthService.js";
 import { EntregaService } from "../services/EntregaService.js";
 import { Dom } from "../utils/dom.js";
 import { Format } from "../utils/format.js";
 import { handleError } from "../utils/errorHandler.js";
 import { MENSAGENS, TIMELINE, STATUS_STEP_INDEX } from "../utils/constants.js";
 
-const TIMELINE_STEPS = TIMELINE;
-const STATUS_STEP_INDEX = STATUS_STEP_INDEX;
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await AuthService.init();
+  } catch (err) {
+    handleError(err, "Autenticacao");
+    document.getElementById("card-busca-rastreio").innerHTML =
+      `<p class="text-muted">Erro de autenticação. Tente novamente mais tarde.</p>`;
+    return;
+  }
   const btnBuscar = document.getElementById("btn-buscar");
   const cardBusca = document.getElementById("card-busca-rastreio");
   const cardStatus = document.getElementById("card-status");
@@ -24,9 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnVoltar) btnVoltar.classList.add("hidden");
   }
 
-  window.addEventListener("beforeunload", () => {
-    if (unsubscribeAtivo) unsubscribeAtivo();
-  });
+  function limparRastreio() {
+    if (unsubscribeAtivo) {
+      unsubscribeAtivo();
+      unsubscribeAtivo = null;
+    }
+  }
+
+  window.addEventListener("beforeunload", limparRastreio);
 
   function renderizarEntrega(entrega) {
     mapaContainer.innerHTML = `
@@ -45,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     const currentStep = STATUS_STEP_INDEX[entrega.status] ?? 0;
-    timelineEl.innerHTML = TIMELINE_STEPS.map((step, i) => {
+    timelineEl.innerHTML = TIMELINE.map((step, i) => {
       const active = i <= currentStep;
       return `
         <div class="flex items-center mt-1"

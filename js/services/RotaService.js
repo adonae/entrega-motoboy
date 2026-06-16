@@ -12,9 +12,12 @@ export const RotaService = {
       throw new Error("Nao foi possivel geocodificar o ponto de partida.");
     }
 
+    const resultados = await Promise.allSettled(
+      entregas.map((e) => GeocodingService.geocodeEntrega(e)),
+    );
     const entregasComCoords = [];
     for (let i = 0; i < entregas.length; i++) {
-      const coords = await GeocodingService.geocodeEntrega(entregas[i]);
+      const coords = resultados[i].status === "fulfilled" ? resultados[i].value : null;
       if (coords) {
         entregasComCoords.push({ ...entregas[i], coords });
       }

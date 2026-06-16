@@ -58,7 +58,13 @@ export function initEntregaForm(state) {
   }
 
   document.getElementById("cliente-telefone").addEventListener("input", (e) => {
+    const start = e.target.selectionStart;
+    const end = e.target.selectionEnd;
+    const prevLen = e.target.value.length;
     e.target.value = Format.phone(e.target.value);
+    const newLen = e.target.value.length;
+    const offset = newLen - prevLen;
+    e.target.setSelectionRange(start + offset, end + offset);
   });
 
   state.btnCancelar.addEventListener("click", () => {

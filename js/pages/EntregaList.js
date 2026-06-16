@@ -87,7 +87,7 @@ export function initEntregaList(state) {
         .filter((e) => e.status === "pendente" && !e.loteId)
         .map((e) => e.id);
 
-      state.hasPendentesSemLote = pendentesIds.length > 0;
+      if (state.store) state.store.set("hasPendentesSemLote", pendentesIds.length > 0);
 
       entregas.forEach((entrega) => {
         const nome = Dom.escapeHtml(entrega.nome);
@@ -114,7 +114,6 @@ export function initEntregaList(state) {
       });
 
       atualizarContadores(entregas);
-      if (state.onLoteChanged) state.onLoteChanged(state.hasPendentesSemLote);
     } catch (err) {
       handleError(err, "Carregar entregas", "Erro ao carregar.");
       state.listaEntregas.innerHTML = `<li class="text-muted">Erro ao carregar.</li>`;
@@ -146,6 +145,5 @@ export function initEntregaList(state) {
     carregarEntregas,
     setOnEditar(fn) { onEditar = fn; },
     setOnLimpar(fn) { onLimpar = fn; },
-    setOnLoteChanged(fn) { state.onLoteChanged = fn; },
   };
 }

@@ -9,15 +9,9 @@ export const Dom = {
   },
 
   showToast(message, type = "info") {
-    const bg =
-      type === "success"
-        ? "var(--success)"
-        : type === "error"
-          ? "var(--danger)"
-          : "var(--primary)";
     const toast = document.createElement("div");
     toast.textContent = message;
-    toast.style.cssText = `position:fixed;bottom:20px;right:20px;padding:12px 16px;border-radius:8px;background:${bg};color:white;z-index:9999;box-shadow:0 4px 6px rgba(0,0,0,0.1);transition:opacity 0.3s;`;
+    toast.className = `toast toast-${type}`;
     document.body.appendChild(toast);
     setTimeout(() => {
       toast.style.opacity = "0";
@@ -57,23 +51,14 @@ export const Dom = {
 
   showLinkCriado(link) {
     const div = document.createElement("div");
-    div.style.cssText = `
-      position:fixed;top:20px;right:20px;left:20px;max-width:500px;
-      margin:0 auto;background:var(--surface);border:1px solid var(--border);
-      border-radius:var(--radius);padding:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.15);
-      z-index:9999;
-    `;
+    div.className = "toast-link-card";
     div.innerHTML = `
-      <p style="margin-bottom:0.5rem;font-weight:500;">Link de rastreio criado</p>
-      <div style="display:flex;gap:0.5rem;align-items:center;">
-        <input readonly value="${this.escapeHtml(link)}"
-          style="flex:1;padding:0.5rem;border:1px solid var(--border);
-                 border-radius:var(--radius);font-size:0.875rem;background:var(--bg);" />
+      <p>Link de rastreio criado</p>
+      <div class="link-input-group">
+        <input readonly value="${this.escapeHtml(link)}" />
         <button data-copiar-link class="btn btn-primary btn-sm">Copiar</button>
       </div>
-      <button data-fechar-card
-        style="position:absolute;top:8px;right:8px;background:none;border:none;
-               cursor:pointer;font-size:1.2rem;color:var(--text-muted);">×</button>
+      <button data-fechar-card class="close-btn">×</button>
     `;
 
     div.querySelector("[data-copiar-link]").addEventListener("click", () => {

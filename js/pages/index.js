@@ -6,6 +6,7 @@ import { initEntregaList } from "./EntregaList.js";
 import { Dom } from "../utils/dom.js";
 import { handleError } from "../utils/errorHandler.js";
 import { MENSAGENS } from "../utils/constants.js";
+import { createStore } from "../utils/store.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -18,6 +19,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const $ = (id) => document.getElementById(id);
+
+  const store = createStore({
+    entregaParaEditar: new URLSearchParams(window.location.search).get("editar"),
+    ultimoCepConsultado: "",
+    entregaEmEdicao: null,
+    entregasCarregadas: [],
+    edicaoInicialCarregada: false,
+    criandoLote: false,
+  });
 
   const state = {
     form: $("form-nova-entrega"),
@@ -37,12 +47,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       uf: $("cliente-uf"),
       complemento: $("cliente-complemento"),
     },
-    entregaParaEditar: new URLSearchParams(window.location.search).get("editar"),
-    ultimoCepConsultado: "",
-    entregaEmEdicao: null,
-    entregasCarregadas: [],
-    edicaoInicialCarregada: false,
-    criandoLote: false,
+    store,
+    get entregaParaEditar() { return store.get("entregaParaEditar"); },
+    get ultimoCepConsultado() { return store.get("ultimoCepConsultado"); },
+    set ultimoCepConsultado(v) { store.set("ultimoCepConsultado", v); },
+    get entregaEmEdicao() { return store.get("entregaEmEdicao"); },
+    set entregaEmEdicao(v) { store.set("entregaEmEdicao", v); },
+    get entregasCarregadas() { return store.get("entregasCarregadas"); },
+    set entregasCarregadas(v) { store.set("entregasCarregadas", v); },
+    get edicaoInicialCarregada() { return store.get("edicaoInicialCarregada"); },
+    set edicaoInicialCarregada(v) { store.set("edicaoInicialCarregada", v); },
+    get criandoLote() { return store.get("criandoLote"); },
+    set criandoLote(v) { store.set("criandoLote", v); },
   };
 
   if (!state.form) return;
@@ -58,12 +74,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const btnCriarLote = document.getElementById("btn-criar-lote");
 
-  list.setOnLoteChanged((hasPendentes) => {
-    if (hasPendentes) {
-      btnCriarLote.classList.remove("hidden");
-    } else {
-      btnCriarLote.classList.add("hidden");
-    }
+  store.subscribe("hasPendentesSemLote", (hasPendentes) => {
+    btnCriarLote.classList.toggle("hidden", !hasPendentes);
   });
 
   btnCriarLote.addEventListener("click", async () => {

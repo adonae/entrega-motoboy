@@ -2,6 +2,7 @@ import { firebaseConfig } from "./config.js";
 
 let _app = null;
 let _db = null;
+let _persistenceEnabled = false;
 
 export function getFirebase() {
   if (typeof firebase === "undefined") {
@@ -18,6 +19,18 @@ export function getFirebase() {
 export function getDb() {
   if (!_db) {
     _db = getFirebase().firestore();
+    if (!_persistenceEnabled) {
+      _persistenceEnabled = true;
+      _db.enablePersistence().catch((err) => {
+        if (err.code === "failed-precondition") {
+          console.warn("Firestore: várias abas abertas, cache offline desativado.");
+        } else if (err.code === "unimplemented") {
+          console.warn("Firestore: navegador não suporta cache offline.");
+        } else {
+          console.warn("Firestore: erro ao ativar persistência:", err.message);
+        }
+      });
+    }
   }
   return _db;
 }
