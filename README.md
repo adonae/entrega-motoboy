@@ -6,11 +6,13 @@ Aplicacao estatica para cadastrar entregas, gerenciar lotes, calcular rota, rast
 
 | Pagina | Quem usa | Para que serve |
 |---|---|---|
-| `index.html` | Loja (operador) | Painel para cadastrar entregas e criar lotes |
+| `index.html` | Loja (operador) | Painel para cadastrar entregas, editar (`?editar=id`) e criar lotes |
+| `lotes.html` | Loja / Motoboy | Lista todos os lotes; permite abrir, excluir ou liberar pedidos de volta ao painel |
 | `lote.html` | Loja / Motoboy | Gerenciar um lote: "Saiu da Loja", "Em Rota" e "Entregue" por entrega |
 | `rota.html` | Motoboy | Calcula ordem sugerida para entregas pendentes |
-| `entrega.html` | Loja / Motoboy | Visualizar detalhes e confirmar entrega individual |
+| `entrega.html` | Loja / Motoboy | Visualizar detalhes e confirmar entrega individual (`?modo` oculta acoes da loja) |
 | `rastrear.html` | Cliente | Acompanha status da entrega em tempo real |
+| `404.html` | — | Pagina padrao do Firebase Hosting para rotas inexistentes |
 
 ## Fluxo de status
 
@@ -32,29 +34,31 @@ A timeline de rastreamento do cliente reflete exatamente essas 4 etapas.
 ```
 js/
 ├── pages/
-│   ├── index.js           # Orquestrador do painel (criar/lotar)
+│   ├── index.js           # Orquestrador do painel (criar/lotar/editar)
 │   ├── CepController.js   # Consulta de CEP (ViaCEP, AbortController)
 │   ├── EntregaForm.js     # Formulario: criar/editar/limpar
 │   ├── EntregaList.js     # Lista: renderizar, excluir, contadores, controle de lote
-│   ├── entrega.js         # Pagina de confirmacao individual
+│   ├── entrega.js         # Pagina de confirmacao individual (aceita ?modo)
 │   ├── lote.js            # Pagina do lote (status batch + individual)
+│   ├── lotes.js           # Listagem de todos os lotes (excluir/liberar)
 │   ├── rota.js            # Pagina de calculo de rota
 │   └── rastrear.js        # Pagina de acompanhamento do cliente
 ├── services/
-│   ├── AuthService.js         # Autenticacao anonima Firebase
-│   ├── GeocodingService.js    # Geocodificacao (Photon, Nominatim, cache LRU)
+│   ├── AuthService.js         # Autenticacao anonima Firebase (com timeout 10s)
+│   ├── GeocodingService.js    # Geocodificacao (Photon, Nominatim, cache LRU 200)
 │   ├── RoutingAlgorithm.js    # Haversine, TSP Nearest Neighbor (puro, sem rede)
 │   ├── RotaService.js         # Orquestracao de rota (geocode + TSP)
 │   ├── EntregaService.js      # Regras de negocio das entregas
 │   ├── LoteService.js         # Regras de negocio dos lotes (batch atomico)
-│   └── ViaCepService.js       # Consulta de CEP via ViaCEP
+│   └── ViaCepService.js       # Consulta de CEP via ViaCEP (com AbortSignal)
 ├── repositories/
 │   ├── EntregaRepository.js   # Acesso ao Firestore (entregas)
 │   └── LoteRepository.js      # Acesso ao Firestore (lotes)
 └── utils/
+    ├── store.js            # Store reativo pub/sub (get, set, subscribe)
     ├── dom.js              # Helpers de DOM (toast, loading, escape, contador aninhado)
     ├── format.js           # Formatacao (CEP, telefone, data, status)
-    ├── constants.js        # Strings e valores fixos (STATUS, TIMELINE, COLECOES)
+    ├── constants.js        # Strings e valores fixos (STATUS, TIMELINE, COLECOES, LOJA)
     └── errorHandler.js     # Tratamento centralizado de erros
 ```
 
@@ -84,7 +88,7 @@ O arquivo `js/config.js` fica fora do Git por conter dados de configuracao do pr
 
 Como os arquivos JavaScript usam `type="module"`, abra o projeto por um servidor local, nao direto pelo arquivo no navegador.
 
-Com Firebase CLI:
+Com Firebase CLI (emulador configurado na porta 5000):
 
 ```bash
 npx -y firebase-tools@latest emulators:start --only hosting
@@ -100,19 +104,65 @@ O Firebase Hosting esta configurado em `firebase.json`. A pasta publica atual e 
 npx -y firebase-tools@latest deploy --only hosting
 ```
 
+## Autenticacao
+
+Todas as paginas usam autenticacao anonima do Firebase (`signInAnonymously`). O `AuthService.init()` e chamado no `DOMContentLoaded` de cada pagina e tem timeout de 10s. O cliente de rastreamento tambem passa por esse fluxo — nao ha acesso nao autenticado.
+
 ## Regras de seguranca
 
 As regras do Firestore estao definidas em `firestore.rules`:
 
-- **Leitura por ID** (`get`): publica — cliente consegue rastrear sem autenticacao.
-- **Listagem** (`list`): restrita a usuarios autenticados.
-- **Escrita**: restrita a usuarios autenticados (`allow write: if request.auth != null`).
+- **Leitura e listagem**: restritas a usuarios autenticados (`allow read: if request.auth != null`).
+- **Escrita**: restrita a usuarios autenticados.
+- **Validacao de campos em create**: `nome`, `telefone`, `endereco`, `status` obrigatorios com limites de tamanho.
+- **Imutabilidade do `criadoEm`**: nao pode ser alterado apos a criacao.
+- **Lotes**: `entregaIds` nao pode ser modificado apos criacao; `saiuEm` permite apenas transicao de `null` para um timestamp.
 
 Aplique com:
 
 ```bash
 npx -y firebase-tools@latest deploy --only firestore
 ```
+
+## Indices do Firestore
+
+`firestore.indexes.json` define um indice composto na colecao `entregas`:
+
+| Campos | Ordenacao |
+|---|---|
+| `status` ASC, `criadoEm` DESC | Listar entregas por status da mais recente |
+
+```bash
+npx -y firebase-tools@latest deploy --only firestore
+```
+
+## Cache offline
+
+O Firebase Firestore `enablePersistence()` e ativado automaticamente na inicializacao (`firebase.js`). Se o navegador nao suportar ou houver varias abas abertas, o fallback e silencioso (apenas um aviso no console).
+
+## Endereco padrao da loja
+
+O endereco de origem usado no calculo de rota esta definido em `js/utils/constants.js`:
+
+```
+Avenida Tabajaras, 848, Centro, Joao Pessoa - PB, CEP 58013-270
+```
+
+O operador pode sobrescrever esse endereco via painel; o valor personalizado fica salvo no `localStorage` (chave `endereco_loja`).
+
+## Projeto Firebase
+
+O arquivo `.firebaserc` mapeia o projeto padrao como `sebo-entregas`. Para usar outro projeto:
+
+```bash
+npx -y firebase-tools@latest use <outro-projeto>
+```
+
+## Configuracao do hosting
+
+O `firebase.json` define a raiz do projeto como pasta publica (`"."`) e ignora no deploy: `firebase.json`, `.firebaserc`, `.gitignore`, `skills-lock.json`, `firebase-debug.log`, `**/.*` e `**/node_modules/**`.
+
+O emulador local de hosting esta pre-configurado na porta 5000 com UI habilitada (veja "Desenvolvimento local").
 
 ## Observacoes
 
